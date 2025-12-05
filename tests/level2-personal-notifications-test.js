@@ -1,8 +1,8 @@
 import { io } from "socket.io-client";
 
-const URL = process.env.TEST_URL || "https://ecommerce-backend-laba3.onrender.com";
-const token = process.env.TEST_JWT || "PASTE_YOUR_JWT_HERE";
-const userId = process.env.TEST_USER_ID || "USER123";
+const URL = process.env.TEST_URL;
+const token = process.env.TEST_JWT;
+const userId = process.env.TEST_USER_ID;
 
 const socket = io(URL, { auth: { token } });
 

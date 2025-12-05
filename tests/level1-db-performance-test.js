@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const DB_URI = process.env.MONGO_URI || "mongodb://localhost:27017/test";
+const DB_URI = process.env.TEST_DB_URI;
 
 (async () => {
   const start = Date.now();

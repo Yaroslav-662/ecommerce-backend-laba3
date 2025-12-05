@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const URL = process.env.TEST_URL || "https://ecommerce-backend-laba3.onrender.com";
+const socket = io(URL);
 
 socket.emit("joinRoom", "orders");
 
@@ -10,8 +11,5 @@ socket.on("notification", (msg) => {
 });
 
 setTimeout(() => {
-  socket.emit("sendNotification", {
-    room: "orders",
-    message: "Test notification!",
-  });
+  socket.emit("sendNotification", { room: "orders", message: "Test notification!" });
 }, 2000);

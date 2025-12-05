@@ -1,17 +1,16 @@
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000");
+const URL = process.env.TEST_URL || "https://ecommerce-backend-laba3.onrender.com";
+const socket = io(URL);
 
 socket.on("connect", () => {
   console.log("Connected:", socket.id);
+  socket.emit("joinRoom", "orders");
+  console.log("Joined room: orders");
 });
 
-socket.on("hello", (msg) => {
-  console.log("Server hello:", msg);
+socket.on("notification", (msg) => {
+  console.log("Room notification:", msg);
 });
 
-socket.on("connect_error", (err) => {
-  console.error("Connection error:", err.message);
-});
-
-setTimeout(() => process.exit(0), 3000);
+setTimeout(() => process.exit(0), 5000);

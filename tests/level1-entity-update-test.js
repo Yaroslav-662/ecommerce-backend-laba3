@@ -1,7 +1,8 @@
 import { io } from "socket.io-client";
 import axios from "axios";
 
-const socket = io("http://localhost:5000");
+const URL = process.env.TEST_URL || "https://ecommerce-backend-laba3.onrender.com";
+const socket = io(URL);
 
 socket.emit("joinRoom", "orders");
 
@@ -11,8 +12,5 @@ socket.on("orderUpdated", (data) => {
 });
 
 setTimeout(async () => {
-  await axios.post("http://localhost:5000/api/orders", {
-    user: "Tester",
-    price: 999,
-  });
+  await axios.post(`${URL}/api/orders`, { user: "Tester", price: 999 });
 }, 2000);

@@ -1,9 +1,7 @@
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000", {
-  reconnectionAttempts: 5,
-  reconnectionDelay: 500
-});
+const URL = process.env.TEST_URL || "https://ecommerce-backend-laba3.onrender.com";
+const socket = io(URL, { reconnectionAttempts: 5, reconnectionDelay: 500 });
 
 socket.on("connect", () => console.log("Connected:", socket.id));
 socket.on("reconnect_attempt", () => console.log("Trying reconnect..."));

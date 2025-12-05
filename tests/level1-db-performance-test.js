@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 
+const DB_URI = process.env.MONGO_URI || "mongodb://localhost:27017/test";
+
 (async () => {
   const start = Date.now();
 
-  await mongoose.connect("mongodb://localhost:27017/test");
+  await mongoose.connect(DB_URI);
 
   const slowQueries = await mongoose.connection.db
     .collection("system.profile")

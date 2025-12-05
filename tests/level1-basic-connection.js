@@ -1,8 +1,7 @@
 import { io } from "socket.io-client";
 
-const URL = process.env.TEST_URL || "http://localhost:5000";
-
-const socket = io(URL, { transports: ["websocket"] });
+const URL = process.env.TEST_URL || "https://ecommerce-backend-laba3.onrender.com";
+const socket = io(URL);
 
 socket.on("connect", () => {
   console.log("Connected:", socket.id);

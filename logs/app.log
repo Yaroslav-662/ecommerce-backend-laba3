@@ -1,0 +1,143 @@
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-10-29T23:19:34.635Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-10-29T23:19:35.081Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-10-30T23:26:38.998Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-10-30T23:26:39.303Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-04T09:31:25.117Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-04T09:31:25.274Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-04T10:44:04.390Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-04T10:44:04.482Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-04T16:27:01.147Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-04T16:27:01.663Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-05T09:15:42.981Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-05T09:15:43.371Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-06T21:29:38.682Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-06T21:29:38.894Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-06T22:36:35.757Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-06T22:36:36.111Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-06T22:45:06.276Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-06T22:45:06.358Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-06T23:04:02.980Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-06T23:04:03.066Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-06T23:09:04.230Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-06T23:09:04.307Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-06T23:24:07.214Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-06T23:24:07.311Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-06T23:35:51.769Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-06T23:35:51.921Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-06T23:48:12.664Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-06T23:48:12.751Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T00:00:53.043Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T00:00:53.409Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T00:08:58.296Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T00:08:58.472Z"}
+{"level":"error","message":"SyntaxError: Expected double-quoted property name in JSON at position 65 (line 4 column 1)\n    at JSON.parse (<anonymous>)\n    at parse (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n    at C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\body-parser\\lib\\read.js:128:18\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n    at invokeCallback (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\raw-body\\index.js:238:16)\n    at done (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:519:28)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)","timestamp":"2025-11-07T00:10:16.696Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T00:14:48.664Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T00:14:49.175Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T00:30:15.426Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T00:30:16.301Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T00:37:49.789Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T00:37:49.983Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T00:42:22.820Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T00:42:22.971Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T00:43:25.863Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T00:43:26.058Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T00:46:02.091Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T00:46:02.201Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T00:46:13.924Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T00:46:14.021Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T01:06:44.405Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T01:06:44.552Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-06T21:15:32.538Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-06T21:15:32.696Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T00:58:43.328Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T00:58:43.871Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T22:16:59.133Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T22:16:59.325Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T22:33:38.146Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T22:33:38.304Z"}
+{"level":"error","message":"SyntaxError: Unexpected token 'О', ...\"  \"name\": Олена Кова\"... is not valid JSON\n    at JSON.parse (<anonymous>)\n    at parse (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n    at C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\body-parser\\lib\\read.js:128:18\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n    at invokeCallback (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\raw-body\\index.js:238:16)\n    at done (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:519:28)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)","timestamp":"2025-11-07T22:42:06.318Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T22:52:03.641Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T22:52:03.744Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-07T23:22:18.957Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-07T23:22:19.042Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-08T21:09:50.064Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-08T21:09:50.478Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-08T21:45:01.582Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-08T21:45:01.740Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-08T21:47:37.211Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-08T21:47:37.301Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-08T21:51:50.493Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-08T21:51:50.572Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T16:53:18.261Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T16:53:18.949Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T17:07:06.312Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T17:07:06.896Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T17:53:11.495Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T17:53:12.056Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T18:12:22.713Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T18:12:22.838Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T18:17:15.838Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T18:17:15.933Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T18:18:41.650Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T18:18:41.873Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T18:20:20.700Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T18:20:20.897Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T18:22:34.083Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T18:22:34.168Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T22:01:35.647Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T22:01:36.774Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T22:27:36.495Z"}
+{"cause":{"commonWireVersion":0,"compatible":true,"heartbeatFrequencyMS":10000,"localThresholdMS":15,"logicalSessionTimeoutMinutes":null,"maxElectionId":null,"maxSetVersion":null,"servers":{"localhost:27017":{"$clusterTime":null,"address":"localhost:27017","arbiters":[],"electionId":null,"error":null,"hosts":[],"iscryptd":false,"lastUpdateTime":22520861,"lastWriteDate":0,"logicalSessionTimeoutMinutes":null,"maxBsonObjectSize":null,"maxMessageSizeBytes":null,"maxWireVersion":0,"maxWriteBatchSize":null,"me":null,"minRoundTripTime":0,"minWireVersion":0,"passives":[],"primary":null,"roundTripTime":-1,"setName":null,"setVersion":null,"tags":{},"topologyVersion":null,"type":"Unknown"}},"setName":null,"stale":false,"type":"Unknown"},"errorLabelSet":{},"level":"error","message":"MongoDB connection error Server selection timed out after 30000 ms","reason":{"commonWireVersion":0,"compatible":true,"heartbeatFrequencyMS":10000,"localThresholdMS":15,"logicalSessionTimeoutMinutes":null,"maxElectionId":null,"maxSetVersion":null,"servers":{"localhost:27017":{"$clusterTime":null,"address":"localhost:27017","arbiters":[],"electionId":null,"error":null,"hosts":[],"iscryptd":false,"lastUpdateTime":22520861,"lastWriteDate":0,"logicalSessionTimeoutMinutes":null,"maxBsonObjectSize":null,"maxMessageSizeBytes":null,"maxWireVersion":0,"maxWriteBatchSize":null,"me":null,"minRoundTripTime":0,"minWireVersion":0,"passives":[],"primary":null,"roundTripTime":-1,"setName":null,"setVersion":null,"tags":{},"topologyVersion":null,"type":"Unknown"}},"setName":null,"stale":false,"type":"Unknown"},"stack":"MongooseServerSelectionError: Server selection timed out after 30000 ms\n    at _handleConnectionErrors (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\connection.js:1169:11)\n    at NativeConnection.openUri (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\connection.js:1100:11)","timestamp":"2025-11-26T22:27:40.715Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T22:29:22.426Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T22:29:22.559Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-26T23:38:44.717Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-26T23:38:45.311Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-27T00:10:36.505Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-27T00:10:37.297Z"}
+{"level":"info","message":"✅ Server started on port 5000","timestamp":"2025-11-27T14:01:11.808Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-11-27T14:01:12.571Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-04T10:20:38.333Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-04T10:20:42.151Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-04T11:21:25.431Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-04T11:21:30.400Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-04T21:31:54.704Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-04T21:31:57.798Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-04T22:34:59.614Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-04T22:35:05.035Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-04T23:47:23.441Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-04T23:47:25.471Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-04T23:50:30.873Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-04T23:50:32.826Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-04T23:53:20.077Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-04T23:53:22.064Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-04T23:58:22.611Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-04T23:58:24.518Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-05T10:19:30.522Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-05T10:19:34.514Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-05T10:23:14.472Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-05T10:23:16.506Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-05T22:37:23.706Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-05T22:37:26.342Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-05T22:44:28.419Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-05T22:44:30.571Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-06T01:08:35.477Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-06T01:08:38.394Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-06T12:29:09.647Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-06T12:29:13.775Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-06T13:38:45.179Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-06T13:38:47.803Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-06T15:31:23.295Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-06T15:31:25.389Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-06T17:32:19.202Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-06T17:32:23.232Z"}
+{"level":"error","message":"ValidationError: Order validation failed: total: Path `total` is required., items.0.price: Path `price` is required.\n    at Document.invalidate (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\document.js:3362:32)\n    at C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\document.js:3123:17\n    at C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\schemaType.js:1420:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)","timestamp":"2025-12-06T17:33:45.728Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-06T17:38:07.064Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-06T17:38:09.214Z"}
+{"level":"error","message":"ValidationError: Order validation failed: total: Path `total` is required.\n    at Document.invalidate (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\document.js:3362:32)\n    at C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\document.js:3123:17\n    at C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\schemaType.js:1420:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)","timestamp":"2025-12-06T17:39:04.573Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-06T17:44:06.032Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-06T17:44:07.981Z"}
+{"level":"error","message":"ValidationError: Order validation failed: total: Path `total` is required.\n    at Document.invalidate (C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\document.js:3362:32)\n    at C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\document.js:3123:17\n    at C:\\Users\\Anonim\\ecommerce-backend\\node_modules\\mongoose\\lib\\schemaType.js:1420:9\n    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)","timestamp":"2025-12-06T17:44:36.948Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-06T17:58:03.811Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-06T17:58:05.771Z"}
+{"level":"info","message":"🚀 Server + WebSockets started on port 5000","timestamp":"2025-12-06T18:04:53.890Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-12-06T18:04:55.920Z"}

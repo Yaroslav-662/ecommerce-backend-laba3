@@ -1,22 +1,19 @@
 {
   "name": "ecommerce-backend",
   "version": "1.0.0",
-  "description": "E-commerce backend with WebSockets, MongoDB, Redis, queues, notifications, and authentication",
+  "description": "E-commerce backend (products, categories, orders, users, auth, uploads)",
   "main": "server.js",
   "type": "module",
-  "engines": {
-    "node": ">=18 <21"
-  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
     "seed": "node scripts/seedAdmin.js",
-    "clear": "node scripts/clearDatabase.js"
+    "clear": "node scripts/clearDatabase.js",
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "@socket.io/admin-ui": "^0.5.1",
     "@socket.io/redis-adapter": "^8.3.0",
-    "express-session": "^1.17.3",
     "axios": "^1.13.2",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.65.1",
@@ -24,6 +21,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.19.2",
     "express-rate-limit": "^7.4.0",
+    "express-session": "^1.18.2",
     "helmet": "^7.0.0",
     "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.2",
@@ -48,6 +46,8 @@
     "@eslint/js": "^9.39.1",
     "eslint": "^9.39.1",
     "globals": "^16.5.0",
-    "nodemon": "^3.1.0"
+    "jest": "^29.6.1",
+    "nodemon": "^3.1.0",
+    "supertest": "^6.3.4"
   }
 }

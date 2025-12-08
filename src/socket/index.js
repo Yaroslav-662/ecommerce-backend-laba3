@@ -9,7 +9,7 @@ import initUserEvents from "./events/userEvents.js";
 import initNotificationEvents from "./events/notificationEvents.js";
 
 import { initMetrics } from "../monitoring/metrics.js";
-import { setIO } from "./singleton.js";
+import { setIO } from "./singleton.js"; // global io reference
 
 export default function initSocket(server) {
   const io = new IOServer(server, {
@@ -19,45 +19,79 @@ export default function initSocket(server) {
       methods: ["GET", "POST"],
       credentials: true,
     },
-    transports: ["websocket", "polling"],
     pingInterval: 25000,
     pingTimeout: 60000,
   });
 
-  // Expose global io reference
+  // Store global io instance
   setIO(io);
 
   // Admin UI (optional)
   if (process.env.SOCKET_ADMIN === "true") {
-    instrument(io, { auth: false });
-    console.log("🛠 Socket Admin UI enabled");
+    try {
+      instrument(io, { auth: false });
+      console.log("🔧 Admin UI enabled");
+    } catch (err) {
+      console.warn("Admin UI failed:", err.message);
+    }
   }
 
-  // ====== Redis Disabled for Render ======
-  console.log("⚠️ Redis disabled — running single-instance Socket.IO");
+  // No Redis on Render
+  console.log("⚠ Redis adapter disabled (no REDIS_URL)");
 
-  // ====== Metrics (optional) ======
+  // Metrics
   try {
     initMetrics(io);
-  } catch (e) {
-    console.log("Metrics disabled");
+  } catch (err) {
+    console.warn("Metrics init failed:", err.message);
   }
 
-  // ====== Initialize middlewares & events ======
-  initAuth(io);                // JWT auth
-  initRooms(io);               // rooms, presence
-  initOrderEvents(io);         // order:created, order:updated
-  initUserEvents(io);          // message, typing, online
-  initNotificationEvents(io);  // notification:send (realtime)
+  // Middleware: Auth must go first
+  try {
+    initAuth(io);
+    console.log("🔐 Auth middleware ready");
+  } catch (err) {
+    console.error("initAuth error:", err.message);
+  }
 
-  // ====== Connection logs ======
+  // Rooms
+  try {
+    initRooms(io);
+    console.log("📡 Rooms ready");
+  } catch (err) {
+    console.error("initRooms error:", err.message);
+  }
+
+  // Domain events
+  try {
+    initOrderEvents(io);
+    console.log("📦 Order events ready");
+  } catch (err) {
+    console.error("initOrderEvents error:", err.message);
+  }
+
+  try {
+    initUserEvents(io);
+    console.log("👤 User events ready");
+  } catch (err) {
+    console.error("initUserEvents error:", err.message);
+  }
+
+  try {
+    initNotificationEvents(io);
+    console.log("🔔 Notification events ready");
+  } catch (err) {
+    console.error("initNotificationEvents error:", err.message);
+  }
+
+  // Global logging
   io.on("connection", (socket) => {
     console.log(
-      `🔌 Socket connected: ${socket.id} user=${socket.user?.id || "anon"}`
+      `⚡ Socket connected: ${socket.id}, user=${socket.user?.id || "anon"}`
     );
 
     socket.on("disconnect", (reason) => {
-      console.log(`❌ Socket disconnected: ${socket.id}, reason=${reason}`);
+      console.log(`⚡ Socket disconnected: ${socket.id}, reason=${reason}`);
     });
   });
 

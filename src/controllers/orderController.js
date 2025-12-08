@@ -2,23 +2,24 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import { validateObjectId } from "../utils/validateObjectId.js";
-import socket from "../socket/index.js"; // <-- SOCKET.IO SINGLETON
+import socket from "../socket/index.js";
 
 /**
- * =============================
- * CREATE ORDER
- * =============================
+ * CREATE ORDER — REST API
  */
 export const createOrder = async (req, res, next) => {
   try {
-    const { items, totalPrice } = req.body;
+    const { items, shippingAddress, paymentMethod, total } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "Order must contain at least one item" });
     }
 
-    // Validate products exist
+    // validate all products
     for (const item of items) {
+      if (!item.price) {
+        return res.status(400).json({ message: "Item must contain price" });
+      }
       const product = await Product.findById(item.product);
       if (!product) {
         return res.status(400).json({ message: `Product not found: ${item.product}` });
@@ -28,13 +29,15 @@ export const createOrder = async (req, res, next) => {
     const order = await Order.create({
       user: req.user.id,
       items,
-      total: totalPrice,
+      total,
+      paymentMethod,
+      shippingAddress,
       status: "pending",
     });
 
-    // === SOCKET.IO: real-time event ===
-    socket.io.to(`user_${req.user.id}`).emit("order:new", order);
-    socket.io.to("admins").emit("order:new", order);
+    // notify admin + user
+    socket.io.to(`user:${req.user.id}`).emit("order:created", order);
+    socket.io.to("admin").emit("order:created", order);
 
     return res.status(201).json(order);
   } catch (error) {
@@ -44,15 +47,12 @@ export const createOrder = async (req, res, next) => {
 };
 
 /**
- * =============================
  * GET USER ORDERS
- * =============================
  */
 export const getUserOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({ user: req.user.id })
       .populate("items.product");
-
     return res.json(orders);
   } catch (error) {
     next(error);
@@ -60,9 +60,7 @@ export const getUserOrders = async (req, res, next) => {
 };
 
 /**
- * =============================
- * GET ALL ORDERS (admin only)
- * =============================
+ * GET ALL ORDERS — ADMIN
  */
 export const getAllOrders = async (req, res, next) => {
   try {
@@ -77,9 +75,7 @@ export const getAllOrders = async (req, res, next) => {
 };
 
 /**
- * =============================
- * UPDATE ORDER STATUS
- * =============================
+ * UPDATE ORDER STATUS — REST
  */
 export const updateOrderStatus = async (req, res, next) => {
   try {
@@ -96,22 +92,17 @@ export const updateOrderStatus = async (req, res, next) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // Owner OR admin can update
     if (order.user._id.toString() !== req.user.id && req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    order.status = status || order.status;
+    order.status = status;
     await order.save();
 
-    // SOCKET: notify user + admins
-    socket.io.to(`user_${order.user._id}`).emit("order:update", order);
-    socket.io.to("admins").emit("order:update", order);
+    socket.io.to(`user:${order.user._id}`).emit("order:updated", order);
+    socket.io.to("admin").emit("order:updated", order);
 
-    return res.json({
-      message: "Order status updated",
-      order,
-    });
+    return res.json({ message: "Order status updated", order });
   } catch (error) {
     next(error);
   }

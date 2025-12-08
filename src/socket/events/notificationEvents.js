@@ -1,68 +1,68 @@
-import { addNotificationJob } from "../../queue/notificationQueue.js";
-import Notification from "../../models/Notification.js"; // optional, may be undefined
-import { io as ioWrapper } from "../singleton.js"; // if you use singleton wrapper; fallback to io param
+import Notification from "../../models/Notification.js";
 
 export default function initNotificationEvents(io) {
-  io.on("connection", (socket) => {
+  io.on("connection", (socket) => {  
+    console.log("🔌 User connected for notifications:", socket.id);
+
+    // ---- JOIN USER ROOM ----
+    socket.on("user:join", (userId) => {
+      if (!userId) return;
+      socket.join(`user:${userId}`);
+      console.log(`User ${socket.id} joined room user:${userId}`);
+    });
+
+    // ---- SEND NOTIFICATION ----
     socket.on("notification:send", async (payload, ack) => {
-      // payload: { toUserId, type, title, body, meta, priority }
       try {
         if (!socket.user) {
           ack?.({ error: "Unauthorized" });
           return;
         }
+
         if (!payload || !payload.toUserId) {
           ack?.({ error: "Invalid payload" });
           return;
         }
 
-        // Ensure payload has sender and timestamp
         const fullPayload = {
           ...payload,
           from: socket.user.id,
           ts: new Date(),
         };
 
-        // Try queue if available
-        if (typeof addNotificationJob === "function") {
-          try {
-            await addNotificationJob(fullPayload);
-            ack?.({ ok: true, queued: true });
-            return;
-          } catch (qerr) {
-            console.warn("notification:send queue failed, falling back:", qerr?.message || qerr);
-            // continue to direct delivery
-          }
-        }
-
-        // Fallback: persist (if model available) and emit realtime
+        // ---- SAVE TO DATABASE ----
         let saved = null;
         try {
-          if (Notification && typeof Notification.create === "function") {
-            saved = await Notification.create({
-              user: payload.toUserId,
-              type: payload.type || "info",
-              title: payload.title || "",
-              body: payload.body || "",
-              meta: payload.meta || {},
-              priority: payload.priority || "normal",
-              from: socket.user.id,
-            });
-          }
-        } catch (perr) {
-          console.warn("notification persist failed:", perr?.message || perr);
+          saved = await Notification.create({
+            user: payload.toUserId,
+            type: payload.type || "info",
+            title: payload.title || "",
+            body: payload.body || "",
+            meta: payload.meta || {},
+            priority: payload.priority || "normal",
+            from: socket.user.id,
+          });
+        } catch (err) {
+          console.warn("❗Failed to save notification:", err?.message);
         }
 
-        // Use provided io instance or singleton wrapper if you use that
-        const ioInstance = ioWrapper && ioWrapper.raw ? ioWrapper.raw : io;
-        const userRoom = `user:${payload.toUserId}`;
-        ioInstance.to(userRoom).emit("notification:received", { ...fullPayload, saved });
+        // ---- REALTIME EMIT ----
+        const room = `user:${payload.toUserId}`;
+        io.to(room).emit("notification:received", {
+          ...fullPayload,
+          saved,
+        });
 
-        ack?.({ ok: true, queued: false, saved: !!saved });
+        ack?.({ ok: true, saved: !!saved });
+
       } catch (err) {
-        console.error("notification:send err", err);
+        console.error("notification:send error:", err);
         ack?.({ error: err.message });
       }
+    });
+
+    socket.on("disconnect", () => {
+      console.log("❌ User disconnected:", socket.id);
     });
   });
 }

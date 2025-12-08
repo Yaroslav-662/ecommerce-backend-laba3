@@ -6,12 +6,20 @@ export default function initUserEvents(io) {
       User.findByIdAndUpdate(socket.user.id, { $set: { online: true } });
     }
 
-    // ====== ТЕСТОВА ПОДІЯ MESSAGE ======
+    // ====== УНІВЕРСАЛЬНА ПОДІЯ MESSAGE ======
     socket.on("message", (data) => {
       console.log("MESSAGE EVENT:", data);
 
-      if (data.room) {
-        io.to(data.room).emit("message", data);
+      try {
+        if (data?.room) {
+          // якщо є room → шлемо в кімнату
+          io.to(data.room).emit("message", data);
+        } else {
+          // якщо room немає → шлемо всім
+          io.emit("message", data);
+        }
+      } catch (err) {
+        console.error("Message handler error:", err);
       }
     });
 

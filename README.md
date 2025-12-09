@@ -1,3 +1,107 @@
+Ecommerce Backend — Лабораторна робота №3
+
+Тема: Інтеграція WebSocket (Socket.io) та розширений функціонал
+Автор: Поліщук Ярослав, група ІПЗ-42
+GitHub: https://github.com/Yaroslav-662/ecommerce-backend-laba3
+
+Рівень складності: 3
+
+Встановлення та запуск локально
+
+Клонування репозиторію:
+
+git clone https://github.com/Yaroslav-662/ecommerce-backend-laba3.git
+cd ecommerce-backend-laba3
+
+
+Встановлення залежностей:
+
+npm install
+
+
+Створення .env файлу (приклад):
+
+PORT=5000
+MONGO_URI=<твоє MongoDB підключення>
+JWT_SECRET=<секретний ключ JWT>
+FRONTEND_URL=http://localhost:3000
+
+
+Запуск у режимі розробки:
+
+npm run dev
+
+
+Запуск production:
+
+npm run start
+
+
+Запуск тестового WebSocket клієнта:
+
+Відкрий файл ws-tester.html у браузері.
+
+Введи URL бекенду: https://localhost:5000 або URL деплойного сервера.
+
+Введи JWT токен користувача для підключення.
+
+Використовуй кнопки Connect, Join room, Leave, Send для перевірки подій.
+
+Деплой на Render
+
+Створи новий Web Service на Render.
+
+Вкажи GitHub репозиторій: Yaroslav-662/ecommerce-backend-laba-3.
+
+Вибери branch: main або master.
+
+Встанови середовище:
+
+Build Command: npm install
+
+Start Command: npm run start
+
+Environment Variables: додай всі змінні з .env
+
+Натисни Deploy.
+
+Після успішного деплою ти отримаєш URL для WebSocket підключення та REST API.
+
+WebSocket Events (Socket.io)
+
+Підключення:
+
+URL: https://<backend-url>/socket.io
+
+Auth: JWT токен користувача
+
+Основні події:
+
+Подія	Опис	Вхідні дані	Вихідні дані
+order:create	Створення замовлення	{ items: [{product, quantity, price}], total }	order:created
+order:updateStatus	Оновлення статусу замовлення	{ orderId, status }	order:updated
+joinRoom	Підключення до кімнати	room	ack {ok:true, room}
+leaveRoom	Вихід з кімнати	room	ack {ok:true, room}
+message	Надсилання повідомлення в кімнату	{ room, text }	ack {ok:true}
+presence:update	Оновлення онлайн-статусу	{ userId, status }	broadcast всім
+whoami	Отримати інформацію про підключеного користувача	—	{ userId, role }
+
+Примітки:
+
+Події підтримують ack callback для підтвердження доставки.
+
+При розриві з’єднання WebSocket виконує автоматичне повторне підключення (reconnection).
+
+Тестування
+
+Всі події WebSocket перевірені через ws-tester.html.
+
+Створення та оновлення замовлень, онлайн-статуси, персональні повідомлення та reconnection працюють коректно.
+
+
+
+
+
 
 
 Звіт з лабораторної роботи №3
@@ -7,7 +111,7 @@
 Здобувач освіти: Поліщук Ярослав
 Група: ІПЗ-42
 GitHub репозиторій: https://github.com/Yaroslav-662/ecommerce-backend-laba3
-
+Render:https://ecommerce-backend-mgfu.onrender.com
 Рівень складності: 3
 
 Реалізований функціонал
@@ -147,3 +251,4 @@ Reconnection при втраті з’єднання	disconnect → connect	—	
 Код повністю робочий і протестований за допомогою ws-tester.html.
 
 Структура WebSocket API відповідає сучасним вимогам для real-time застосунків.
+

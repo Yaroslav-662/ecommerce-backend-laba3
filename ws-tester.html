@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Socket.io Tester — Verbose</title>
+<style>
+body{font-family:system-ui;padding:12px}
+input,button,textarea{margin:6px 0;padding:6px}
+#log{white-space:pre-wrap;border:1px solid #ccc;height:380px;overflow:auto;padding:8px;background:#f9f9f9}
+.row{display:flex;gap:8px;align-items:center}
+.small{font-size:13px;color:#444}
+</style>
+</head>
+<body>
+<h3>Socket.io Tester — Verbose</h3>
+
+<div class="row">
+  <label>URL</label>
+  <input id="url" value="https://ecommerce-backend-mgfu.onrender.com" style="width:420px"/>
+  <label>Path</label>
+  <input id="path" value="/socket.io" style="width:120px"/>
+</div>
+
+<div class="row">
+  <label>JWT token</label>
+  <input id="token" style="width:540px" placeholder="optional"/>
+</div>
+
+<div class="row">
+  <label>Join room</label>
+  <input id="room" placeholder="test-room"/>
+  <button id="btnJoin">Join</button>
+  <button id="btnLeave">Leave</button>
+</div>
+
+<div style="margin-top:8px">
+  <label>Event name</label>
+  <input id="ev" placeholder="e.g. message" style="width:200px"/>
+  <label>Data JSON</label>
+  <input id="data" placeholder='{"room":"test-room","text":"hi"}' style="width:340px"/>
+  <button id="btnSend">Send</button>
+</div>
+
+<div style="margin-top:8px">
+  <button id="btnConnect">Connect</button>
+  <button id="btnDisconnect">Disconnect</button>
+  <button id="btnWhoami">WhoAmI (ack)</button>
+</div>
+
+<h4>Log</h4>
+<div id="log"></div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const logEl = document.getElementById('log');
+function log(...args){ logEl.innerText += args.map(a => typeof a === 'object' ? JSON.stringify(a,null,2) : String(a)).join(' ') + '\n'; logEl.scrollTop = logEl.scrollHeight; }
+
+let socket = null;
+
+document.getElementById('btnConnect').onclick = () => {
+  if (socket && socket.connected) { log('Already connected'); return; }
+  const url = document.getElementById('url').value;
+  const path = document.getElementById('path').value;
+  const token = document.getElementById('token').value;
+  log('Connecting to', url, 'path', path, token ? 'with token' : 'no token');
+  socket = io(url, { path, auth: token ? { token } : {}, transports: ['websocket'] });
+
+  socket.on('connect', () => log('CONNECTED:', socket.id));
+  socket.on('connect_error', (err) => log('connect_error:', err && err.message ? err.message : err));
+  socket.on('disconnect', (r) => log('DISCONNECT:', r));
+  socket.onAny((ev, data) => log('EVENT:', ev, data));
+  // log all incoming raw packets? not available here. Use browser Network WS frames too.
+};
+
+document.getElementById('btnDisconnect').onclick = () => {
+  if (!socket) return log('No socket');
+  socket.disconnect();
+  log('manual disconnect');
+};
+
+document.getElementById('btnJoin').onclick = () => {
+  if (!socket) return log('Connect first');
+  const r = document.getElementById('room').value;
+  if (!r) return log('Provide room name');
+  socket.emit('joinRoom', r, (ack) => log('join ack:', ack));
+  log('emit joinRoom ->', r);
+};
+
+document.getElementById('btnLeave').onclick = () => {
+  if (!socket) return log('Connect first');
+  const r = document.getElementById('room').value;
+  socket.emit('leaveRoom', r, (ack) => log('leave ack:', ack));
+  log('emit leaveRoom ->', r);
+};
+
+document.getElementById('btnSend').onclick = () => {
+  if (!socket || !socket.connected) return log('Socket not connected');
+  const ev = document.getElementById('ev').value.trim();
+  if (!ev) return log('Provide event name');
+  let payload = null;
+  const raw = document.getElementById('data').value.trim();
+  if (!raw) payload = {};
+  else {
+    try { payload = JSON.parse(raw); }
+    catch(e){ return log('Invalid JSON:', e.message); }
+  }
+  // send with ack callback to capture server-side ack/errors
+  try {
+    socket.timeout(5000).emit(ev, payload, (err, response) => {
+      if (err) log('emit ack timeout or error:', err);
+      else log('emit ack response:', response);
+    });
+    log('EMIT:', ev, payload);
+  } catch (err) {
+    log('emit error:', err && err.message ? err.message : err);
+  }
+};
+
+document.getElementById('btnWhoami').onclick = () => {
+  if (!socket) return log('Connect first');
+  socket.timeout(3000).emit('whoami', (err, resp) => {
+    if (err) log('whoami timeout or err', err);
+    else log('whoami resp', resp);
+  });
+  log('whoami requested');
+};
+
+// helper: allow manual console emit
+window._tester = {
+  socket,
+  emit: (ev, data)=>{ if (socket) socket.emit(ev, data); else log('no socket'); }
+};
+</script>
+</body>
+</html>

@@ -4,13 +4,17 @@ import { io } from "../socket/singleton.js";
 import { logger } from "../config/logger.js";
 
 export const startWorkers = () => {
-  // 🔥 Worker for notifications
+  // ✅ якщо Redis не налаштований — воркери не стартують
+  if (!process.env.REDIS_URL) {
+    logger.warn("REDIS_URL not set -> BullMQ workers are disabled");
+    return;
+  }
+
   const notificationWorker = new Worker(
     "notifications",
     async (job) => {
       const { userId, title, message, type = "info" } = job.data;
 
-      // Save to DB
       const notif = await Notification.create({
         user: userId,
         title,
@@ -18,7 +22,6 @@ export const startWorkers = () => {
         type,
       });
 
-      // Send via WebSocket
       if (io) {
         io.to(`user_${userId}`).emit("notification", notif);
       }
@@ -26,9 +29,9 @@ export const startWorkers = () => {
       return notif;
     },
     {
+      // ✅ BullMQ найкраще працює з URL
       connection: {
-        host: process.env.REDIS_HOST || "127.0.0.1",
-        port: process.env.REDIS_PORT || 6379,
+        url: process.env.REDIS_URL,
       },
     }
   );
@@ -39,5 +42,10 @@ export const startWorkers = () => {
 
   notificationWorker.on("failed", (job, err) => {
     logger.error(`❌ Notification job failed: ${err.message}`);
+  });
+
+  // ✅ щоб не було "тихого падіння"
+  notificationWorker.on("error", (err) => {
+    logger.error({ err }, "❌ Notification worker error");
   });
 };

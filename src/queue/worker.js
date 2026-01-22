@@ -1,14 +1,27 @@
+// src/queue/worker.js
 import { Worker } from "bullmq";
+import IORedis from "ioredis";
 import Notification from "../models/Notification.js";
 import { io } from "../socket/singleton.js";
 import { logger } from "../config/logger.js";
 
 export const startWorkers = () => {
-  // ✅ якщо Redis не налаштований — воркери не стартують
-  if (!process.env.REDIS_URL) {
-    logger.warn("REDIS_URL not set -> BullMQ workers are disabled");
+  const redisUrl = process.env.REDIS_URL;
+
+  if (!redisUrl) {
+    logger.warn("REDIS_URL not set -> workers disabled");
     return;
   }
+
+  const connection = new IORedis(redisUrl, {
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    tls: redisUrl.startsWith("rediss://") ? {} : undefined,
+  });
+
+  connection.on("error", (err) => {
+    logger.error({ err }, "Redis worker connection error");
+  });
 
   const notificationWorker = new Worker(
     "notifications",
@@ -28,12 +41,7 @@ export const startWorkers = () => {
 
       return notif;
     },
-    {
-      // ✅ BullMQ найкраще працює з URL
-      connection: {
-        url: process.env.REDIS_URL,
-      },
-    }
+    { connection }
   );
 
   notificationWorker.on("completed", (job) => {
@@ -44,7 +52,6 @@ export const startWorkers = () => {
     logger.error(`❌ Notification job failed: ${err.message}`);
   });
 
-  // ✅ щоб не було "тихого падіння"
   notificationWorker.on("error", (err) => {
     logger.error({ err }, "❌ Notification worker error");
   });

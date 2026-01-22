@@ -5,6 +5,9 @@ import { redis } from "../config/redis.js";
 
 const router = express.Router();
 router.get("/_ping", (req, res) => res.json({ ok: true }));
+router.get("/_routes-ok", (req, res) => {
+  res.json({ ok: true, where: "routes/index.js" });
+});
 
 router.get("/health", async (req, res) => {
   let redisStatus = "disabled";
@@ -28,4 +31,5 @@ router.get("/health", async (req, res) => {
 });
 
 export default router;
+
 

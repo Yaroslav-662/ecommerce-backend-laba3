@@ -9,7 +9,10 @@ import initUserEvents from "./events/userEvents.js";
 import initNotificationEvents from "./events/notificationEvents.js";
 
 import { initMetrics } from "../monitoring/metrics.js";
-import { setIO } from "./singleton.js"; // global io reference
+import { setIO } from "./singleton.js";
+
+// ✅ ДОДАЙ ЦЕ:
+import { attachRedisAdapter } from "./redisAdapter.js";
 
 export default function initSocket(server) {
   const io = new IOServer(server, {
@@ -23,7 +26,6 @@ export default function initSocket(server) {
     pingTimeout: 60000,
   });
 
-  // Store global io instance
   setIO(io);
 
   // Admin UI (optional)
@@ -36,8 +38,8 @@ export default function initSocket(server) {
     }
   }
 
-  // No Redis on Render
-  console.log("⚠ Redis adapter disabled (no REDIS_URL)");
+  // ✅ ЗАМІСТЬ "disabled" — підключаємо умовно (не валить процес)
+  attachRedisAdapter(io);
 
   // Metrics
   try {
@@ -84,7 +86,6 @@ export default function initSocket(server) {
     console.error("initNotificationEvents error:", err.message);
   }
 
-  // Global logging
   io.on("connection", (socket) => {
     console.log(
       `⚡ Socket connected: ${socket.id}, user=${socket.user?.id || "anon"}`

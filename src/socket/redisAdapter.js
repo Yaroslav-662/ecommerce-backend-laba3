@@ -1,22 +1,27 @@
 // src/socket/redisAdapter.js
-//import { createAdapter } from "@socket.io/redis-adapter";
-//import { createClient } from "redis";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { redis } from "../config/redis.js";
+import { logger } from "../config/logger.js";
 
-/**
- * Expects process.env.REDIS_URL
- */
-//export default async function initRedisAdapter(io) {
- // const url = process.env.REDIS_URL;
- // if (!url) throw new Error("REDIS_URL not provided");
+export async function attachRedisAdapter(io) {
+  if (!redis) {
+    logger.warn("Redis disabled -> Socket.IO without redis-adapter");
+    return;
+  }
 
-  //const pubClient = createClient({ url });
-  //const subClient = pubClient.duplicate();
+  // Для адаптера треба pub/sub, робимо дублікат
+  const pubClient = redis;
+  const subClient = pubClient.duplicate();
 
- // await pubClient.connect();
- // await subClient.connect();
+  subClient.on("error", (err) => logger.error({ err }, "Redis subClient error"));
 
- // io.adapter(createAdapter(pubClient, subClient));
- // console.log("✅ Socket.IO Redis adapter initialized");
- // return { pubClient, subClient };
+  try {
+    // ioredis підключається сам, але duplicate краще дочекатись
+    await subClient.connect?.().catch(() => {});
+    io.adapter(createAdapter(pubClient, subClient));
+    logger.info("Socket.IO redis-adapter enabled");
+  } catch (e) {
+    logger.error({ e }, "Failed to enable redis-adapter -> fallback to memory adapter");
+    // ВАЖЛИВО: не валимо процес
+  }
 }
-

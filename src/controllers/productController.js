@@ -42,15 +42,42 @@ const getCache = async (key) => {
     return null;
   }
 };
-
+// helper: escape regex special chars
+const escapeRegex = (str = "") => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // GET /api/products
 export const getProducts = async (req, res, next) => {
   try {
-    const { page = 1, limit = 12, q, category, sort = "-createdAt" } = req.query;
-    const skip = (Number(page) - 1) * Number(limit);
+    const {
+      page = 1,
+      limit = 12,
+      q,
+      category,
+      sort = "-createdAt",
+    } = req.query;
 
-    // caching only for list without filters (simple)
-    const cacheKey = q || category ? null : `products:page:${page}:limit:${limit}:sort:${sort}`;
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, Number(limit) || 12)); // захист
+    const skip = (pageNum - 1) * limitNum;
+
+    // Нормалізуємо q: якщо пусто -> undefined (поверне все)
+    const queryText = typeof q === "string" ? q.trim() : "";
+    const hasQ = queryText.length > 0;
+
+    // allowlist для sort (щоб не передавали "що завгодно")
+    const allowedSort = new Set([
+      "-createdAt",
+      "createdAt",
+      "-price",
+      "price",
+      "name",
+      "-name",
+    ]);
+    const safeSort = allowedSort.has(sort) ? sort : "-createdAt";
+
+    // cache only when no filters
+    const cacheKey = !hasQ && !category
+      ? `products:page:${pageNum}:limit:${limitNum}:sort:${safeSort}`
+      : null;
 
     if (cacheKey) {
       const cached = await getCache(cacheKey);
@@ -58,49 +85,63 @@ export const getProducts = async (req, res, next) => {
     }
 
     const filter = {};
-    if (q) {
-      filter.$text = { $search: q };
-    }
-    if (category) {
-  if (validateObjectId(category)) {
-    filter.category = category;
-  } else {
-    // category як назва/slug (наприклад "Макіяж")
-    const cat = await Category.findOne({
-      $or: [{ name: category }, { slug: category }],
-    }).select("_id");
 
-    if (!cat) {
-      // категорія не знайдена -> просто порожній результат
-      const result = { total: 0, page: Number(page), totalPages: 0, products: [] };
-      return res.json(result);
+    // ✅ Пошук "схоже": якщо q не задано -> НЕ фільтруємо => всі товари
+    if (hasQ) {
+      const safe = escapeRegex(queryText);
+      filter.$or = [
+        { name: { $regex: safe, $options: "i" } },
+        { description: { $regex: safe, $options: "i" } },
+      ];
     }
 
-    filter.category = cat._id;
-  }
-}
+    // ✅ category: або ObjectId, або назва (наприклад "Макіяж")
+    if (typeof category === "string" && category.trim()) {
+      const catValue = category.trim();
 
+      if (validateObjectId(catValue)) {
+        filter.category = catValue;
+      } else {
+        // шукаємо по назві; slug прибери/додай залежно від твоєї схеми
+        const cat = await Category.findOne({
+          $or: [{ name: catValue }, { slug: catValue }],
+        })
+          .select("_id")
+          .lean();
 
-    // Use projection for performance and pagination
+        if (!cat) {
+          // категорія не знайдена -> порожній список без помилки
+          return res.json({
+            total: 0,
+            page: pageNum,
+            totalPages: 0,
+            products: [],
+          });
+        }
+
+        filter.category = cat._id;
+      }
+    }
+
     const [products, total] = await Promise.all([
       Product.find(filter)
-        .select("name price category images stock createdAt")
+        .select("name price category images stock createdAt description")
         .populate("category", "name")
-        .sort(sort)
+        .sort(safeSort)
         .skip(skip)
-        .limit(Number(limit))
+        .limit(limitNum)
         .lean(),
       Product.countDocuments(filter),
     ]);
 
     const result = {
       total,
-      page: Number(page),
-      totalPages: Math.ceil(total / Number(limit)),
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
       products,
     };
 
-    if (cacheKey) await setCache(cacheKey, result, 60); // cache 60s
+    if (cacheKey) await setCache(cacheKey, result, 60);
 
     return res.json(result);
   } catch (error) {
@@ -217,4 +258,5 @@ export const deleteProduct = async (req, res, next) => {
     next(error);
   }
 };
+
 

@@ -3,6 +3,7 @@ import Product from "../models/Product.js";
 import { validateObjectId } from "../utils/validateObjectId.js";
 import socket from "../socket/index.js"; // singleton: export default { io }
 import createDebug from "debug";
+import Category from "../models/Category.js";
 const debug = createDebug("app:productController");
 
 // optional Redis cache (if you have it configured)
@@ -60,7 +61,25 @@ export const getProducts = async (req, res, next) => {
     if (q) {
       filter.$text = { $search: q };
     }
-    if (category) filter.category = category;
+    if (category) {
+  if (validateObjectId(category)) {
+    filter.category = category;
+  } else {
+    // category як назва/slug (наприклад "Макіяж")
+    const cat = await Category.findOne({
+      $or: [{ name: category }, { slug: category }],
+    }).select("_id");
+
+    if (!cat) {
+      // категорія не знайдена -> просто порожній результат
+      const result = { total: 0, page: Number(page), totalPages: 0, products: [] };
+      return res.json(result);
+    }
+
+    filter.category = cat._id;
+  }
+}
+
 
     // Use projection for performance and pagination
     const [products, total] = await Promise.all([
@@ -198,3 +217,4 @@ export const deleteProduct = async (req, res, next) => {
     next(error);
   }
 };
+

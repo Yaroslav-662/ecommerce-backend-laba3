@@ -465,14 +465,14 @@ export const googleCallback = async (req, res) => {
     const access = generateAccessToken(user);
     const refresh = generateRefreshToken(user);
 
+    setAuthCookies(res, access, refresh); // ✅ ОСЬ ТУТ
+
     await Token.create({
       token: refresh,
       user: user._id,
       expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
     });
 
-    // If your route expects a redirect to frontend after OAuth, you can append tokens to URL
-    // Example: res.redirect(`${process.env.FRONTEND_URL}/oauth-success?access=${access}&refresh=${refresh}`)
     return res.json({
       message: "Google авторизація успішна",
       access,
@@ -489,5 +489,7 @@ export const googleCallback = async (req, res) => {
     return res.status(500).json({ message: "Server error in google callback" });
   }
 };
+
+
 
 

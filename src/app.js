@@ -6,40 +6,70 @@ import morgan from "morgan";
 import session from "express-session";
 import passport from "passport";
 import dotenv from "dotenv";
+import path from "path";
+import fs from "fs";
 
 import rateLimiter from "./middleware/rateLimiter.js";
 import routes from "./routes/index.js";
 import { errorMiddleware } from "./middleware/errorMiddleware.js";
-
 import swaggerRouter from "./config/swagger.js";
-import path from "path";
-import fs from "fs";
 
 dotenv.config();
 const app = express();
 
-// Security
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  // додаси потім Vercel домен:
+  // "https://YOUR_PROJECT.vercel.app",
+];
+
 app.use(helmet());
-app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }));
+
+// ✅ CORS без "*", але з credentials (cookies)
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // дозволяємо запити без origin (Swagger/healthcheck/SSR)
+      if (!origin) return cb(null, true);
+
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+
+      return cb(new Error("Not allowed by CORS: " + origin));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// ✅ щоб preflight завжди проходив
+app.options("*", cors());
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(morgan("dev"));
 app.use(rateLimiter);
 
 // Sessions (before passport)
+// ⚠️ для cookies через інший домен треба sameSite/secure нормальні (нижче поясню)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "secret123",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false },
+    cookie: {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+    },
   })
 );
 
 // Passport
 app.use(passport.initialize());
 app.use(passport.session());
-import "./config/passport.js"; // load strategies
+import "./config/passport.js";
 
 // Static uploads
 const uploadDir = process.env.UPLOAD_DIR || "uploads";

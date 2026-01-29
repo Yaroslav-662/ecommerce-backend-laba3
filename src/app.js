@@ -8,6 +8,7 @@ import passport from "passport";
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
+import cookieParser from "cookie-parser";
 
 import rateLimiter from "./middleware/rateLimiter.js";
 import routes from "./routes/index.js";
@@ -17,20 +18,21 @@ import swaggerRouter from "./config/swagger.js";
 dotenv.config();
 const app = express();
 
+const isProd = process.env.NODE_ENV === "production";
+
+// ✅ allowlist (додаси vercel домен потім)
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  // додаси потім Vercel домен:
-  // "https://YOUR_PROJECT.vercel.app",
-];
+  process.env.FRONTEND_URL, // наприклад https://your-app.vercel.app
+].filter(Boolean);
 
 app.use(helmet());
 
-// ✅ CORS без "*", але з credentials (cookies)
 app.use(
   cors({
     origin: (origin, cb) => {
-      // дозволяємо запити без origin (Swagger/healthcheck/SSR)
+      // дозволяємо запити без Origin (Swagger / server-to-server)
       if (!origin) return cb(null, true);
 
       if (allowedOrigins.includes(origin)) return cb(null, true);
@@ -43,7 +45,7 @@ app.use(
   })
 );
 
-// ✅ щоб preflight завжди проходив
+// ✅ preflight
 app.options("*", cors());
 
 app.use(express.json({ limit: "10mb" }));
@@ -51,8 +53,10 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(morgan("dev"));
 app.use(rateLimiter);
 
+// ✅ cookies (потрібно для refreshToken/accessToken cookies)
+app.use(cookieParser());
+
 // Sessions (before passport)
-// ⚠️ для cookies через інший домен треба sameSite/secure нормальні (нижче поясню)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "secret123",
@@ -60,8 +64,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
     },
   })
 );

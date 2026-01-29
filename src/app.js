@@ -17,6 +17,7 @@ import swaggerRouter from "./config/swagger.js";
 
 dotenv.config();
 const app = express();
+app.set("trust proxy", 1);
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -102,3 +103,4 @@ app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorMiddleware);
 
 export default app;
+

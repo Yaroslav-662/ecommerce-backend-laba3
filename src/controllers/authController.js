@@ -8,6 +8,37 @@ import crypto from "crypto";
 import speakeasy from "speakeasy";
 import qrcode from "qrcode";
 import dotenv from "dotenv";
+const isProd = process.env.NODE_ENV === "production";
+
+function setAuthCookies(res, access, refresh) {
+  res.cookie("accessToken", access, {
+    httpOnly: true,
+    sameSite: isProd ? "none" : "lax",
+    secure: isProd,
+    maxAge: 15 * 60 * 1000, // 15 min
+  });
+
+  res.cookie("refreshToken", refresh, {
+    httpOnly: true,
+    sameSite: isProd ? "none" : "lax",
+    secure: isProd,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+}
+
+function clearAuthCookies(res) {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    sameSite: isProd ? "none" : "lax",
+    secure: isProd,
+  });
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    sameSite: isProd ? "none" : "lax",
+    secure: isProd,
+  });
+}
 
 dotenv.config();
 
@@ -136,6 +167,7 @@ export const login = async (req, res) => {
     // Generate tokens
     const access = generateAccessToken(user);
     const refresh = generateRefreshToken(user);
+    setAuthCookies(res, access, refresh);
 
     // Save refresh token as session
     await Token.create({
@@ -177,8 +209,8 @@ export const login = async (req, res) => {
 ========================================================= */
 export const refresh = async (req, res) => {
   try {
-    const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(400).json({ message: "Refresh токен відсутній" });
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+if (!refreshToken) return res.status(400).json({ message: "Refresh токен відсутній" });
 
     const stored = await Token.findOne({ token: refreshToken });
     if (!stored) return res.status(401).json({ message: "Недійсний refresh токен" });
@@ -196,6 +228,7 @@ export const refresh = async (req, res) => {
       stored.token = newRefresh;
       stored.expiresAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
       await stored.save();
+      setAuthCookies(res, newAccess, newRefresh);
 
       return res.json({ access: newAccess, refresh: newRefresh });
     } catch (e) {
@@ -214,16 +247,20 @@ export const refresh = async (req, res) => {
 ========================================================= */
 export const logout = async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+
     if (refreshToken) {
       await Token.deleteOne({ token: refreshToken });
     }
+
+    clearAuthCookies(res);
     return res.json({ message: "Вихід успішний" });
   } catch (err) {
     console.error("logout error:", err);
     return res.status(500).json({ message: "Server error on logout" });
   }
 };
+
 
 /* =========================================================
    LOGOUT ALL (revoke all refresh tokens for user)
@@ -233,12 +270,15 @@ export const logoutAll = async (req, res) => {
   try {
     if (!req.user || !req.user.id) return res.status(401).json({ message: "Unauthorized" });
     await Token.deleteMany({ user: req.user.id });
+
+    clearAuthCookies(res);
     return res.json({ message: "Усі сесії завершено" });
   } catch (err) {
     console.error("logoutAll error:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 /* =========================================================
    SESSIONS: list + revoke
@@ -448,3 +488,4 @@ export const googleCallback = async (req, res) => {
     return res.status(500).json({ message: "Server error in google callback" });
   }
 };
+

@@ -47,7 +47,20 @@ app.use(
 );
 
 // ✅ preflight
-app.options("*", cors());
+app.options(
+  "*",
+  cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS: " + origin));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -103,4 +116,5 @@ app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorMiddleware);
 
 export default app;
+
 

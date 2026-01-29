@@ -6,46 +6,57 @@ import User from "../models/User.js";
 dotenv.config();
 
 /**
- * ✅ Middleware: Перевірка JWT токена
- * Використовується для захисту приватних маршрутів
+ * ✅ Middleware: verify JWT (Bearer OR Cookie)
+ * - Bearer: Authorization: Bearer <token>
+ * - Cookie: accessToken=<token>
  */
 export const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  // Перевіряємо наявність заголовка з токеном
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
   try {
-    // Розшифровуємо токен
+    const authHeader = req.headers.authorization;
+
+    const bearerToken =
+      authHeader && authHeader.startsWith("Bearer ")
+        ? authHeader.split(" ")[1]
+        : null;
+
+    const cookieToken = req.cookies?.accessToken || null;
+
+    const token = cookieToken || bearerToken;
+
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    // ⚠️ ВАЖЛИВО: має збігатися з generateAccessToken()
+    // у тебе зараз jwt.verify(..., process.env.JWT_SECRET)
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Додаємо дані користувача до запиту
-    next();
+
+    // decoded має містити хоча б id + role
+    req.user = decoded;
+    return next();
   } catch (err) {
-    return res.status(403).json({ message: "Invalid or expired token" });
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
 /**
- * ✅ Middleware: Перевірка ролі адміністратора
- * Дозволяє доступ лише користувачам з роллю "admin"
+ * ✅ Middleware: admin only
  */
 export const isAdmin = async (req, res, next) => {
   try {
+    if (!req.user?.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const user = await User.findById(req.user.id);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     if (user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
 
-    next();
+    return next();
   } catch (err) {
     console.error("Admin check error:", err);
     return res.status(500).json({ message: "Server error" });

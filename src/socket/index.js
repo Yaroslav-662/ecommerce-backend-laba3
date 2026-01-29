@@ -15,10 +15,20 @@ import { setIO } from "./singleton.js";
 import { attachRedisAdapter } from "./redisAdapter.js";
 
 export default function initSocket(server) {
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    process.env.FRONTEND_URL, // Vercel домен
+  ].filter(Boolean);
+
   const io = new IOServer(server, {
     path: "/socket.io",
     cors: {
-      origin: process.env.FRONTEND_URL || "*",
+      origin: (origin, cb) => {
+        if (!origin) return cb(null, true);
+        if (allowedOrigins.includes(origin)) return cb(null, true);
+        return cb(new Error("Socket CORS blocked: " + origin));
+      },
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -98,3 +108,4 @@ export default function initSocket(server) {
 
   return io;
 }
+

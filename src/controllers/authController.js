@@ -8,6 +8,7 @@ import crypto from "crypto";
 import speakeasy from "speakeasy";
 import qrcode from "qrcode";
 import dotenv from "dotenv";
+dotenv.config();
 const isProd = process.env.NODE_ENV === "production";
 
 function setAuthCookies(res, access, refresh) {
@@ -40,7 +41,7 @@ function clearAuthCookies(res) {
   });
 }
 
-dotenv.config();
+
 
 /**
  * Auth controller — full-featured
@@ -488,4 +489,5 @@ export const googleCallback = async (req, res) => {
     return res.status(500).json({ message: "Server error in google callback" });
   }
 };
+
 

@@ -28,11 +28,12 @@ function isAllowedMimetype(mimetype) {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // можна розширити: /products, /users
-    const folder = req.baseUrl.includes("/upload") && req.path.includes("/products")
-      ? productsDir
-      : rootDir;
-    cb(null, folder);
+    // /api/upload/products -> uploads/products
+    if (req.baseUrl?.includes("/upload") && req.path?.includes("/products")) {
+      return cb(null, productsDir);
+    }
+    // можна додати /users якщо треба
+    return cb(null, rootDir);
   },
   filename: (req, file, cb) => {
     const { base, ext } = safeName(file.originalname);
@@ -41,7 +42,7 @@ const storage = multer.diskStorage({
   },
 });
 
-export const uploadMiddleware = multer({
+const uploadMiddleware = multer({
   storage,
   limits: { fileSize: Number(process.env.UPLOAD_MAX_FILE_SIZE || 5 * 1024 * 1024) },
   fileFilter: (req, file, cb) => {
@@ -51,3 +52,5 @@ export const uploadMiddleware = multer({
     cb(null, true);
   },
 });
+
+export default uploadMiddleware;

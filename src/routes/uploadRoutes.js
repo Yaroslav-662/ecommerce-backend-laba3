@@ -1,13 +1,13 @@
 // src/routes/uploadRoutes.js
 import express from "express";
-import uploadMiddleware from "../middleware/uploadMiddleware.js";
+import { uploadMiddleware } from "../middleware/uploadMiddleware.js";
 import { verifyToken, isAdmin } from "../middleware/authMiddleware.js";
 import {
   uploadFile,
   uploadProductImages,
-  deleteProductImage,
   getAllFiles,
   deleteFile,
+  deleteByUrl,
   renameFile,
 } from "../controllers/uploadController.js";
 
@@ -46,6 +46,9 @@ const router = express.Router();
 router.post("/file", verifyToken, uploadMiddleware.single("file"), uploadFile);
 
 /**
+ * ✅ IMPORTANT: upload product images (admin, multiple)
+ * field: images[]
+ *
  * @swagger
  * /api/upload/products:
  *   post:
@@ -69,19 +72,6 @@ router.post("/file", verifyToken, uploadMiddleware.single("file"), uploadFile);
  *     responses:
  *       201:
  *         description: Фото завантажено
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message: { type: string, example: "✅ Фото товару завантажено" }
- *                 urls:
- *                   type: array
- *                   items: { type: string }
- *                   example:
- *                    - "https://ecommerce-backend-mgfu.onrender.com/uploads/products/p_1.jpg"
- *                    - "https://ecommerce-backend-mgfu.onrender.com/uploads/products/p_2.jpg"
- *                 count: { type: number, example: 2 }
  */
 router.post(
   "/products",
@@ -93,23 +83,26 @@ router.post(
 
 /**
  * @swagger
- * /api/upload/products/{filename}:
+ * /api/upload/by-url:
  *   delete:
- *     summary: Видалити фото товару (адмін)
+ *     summary: Видалити фото товару по URL (адмін)
  *     tags: [Uploads]
  *     security:
  *       - BearerAuth: []
- *     parameters:
- *       - name: filename
- *         in: path
- *         required: true
- *         schema:
- *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [url]
+ *             properties:
+ *               url: { type: string }
  *     responses:
  *       200:
- *         description: Фото видалено
+ *         description: Видалено
  */
-router.delete("/products/:filename", verifyToken, isAdmin, deleteProductImage);
+router.delete("/by-url", verifyToken, isAdmin, deleteByUrl);
 
 /**
  * @swagger
@@ -121,7 +114,7 @@ router.delete("/products/:filename", verifyToken, isAdmin, deleteProductImage);
  *       - BearerAuth: []
  *     responses:
  *       200:
- *         description: Список файлів (масив)
+ *         description: Список файлів
  */
 router.get("/", verifyToken, isAdmin, getAllFiles);
 

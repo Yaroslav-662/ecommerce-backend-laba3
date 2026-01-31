@@ -3,44 +3,51 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR || "uploads";
-const PRODUCTS_DIR = process.env.UPLOAD_PRODUCTS_DIR || "uploads/products";
-const MAX_FILE_SIZE = Number(process.env.UPLOAD_MAX_FILE_SIZE) || 5 * 1024 * 1024;
+const rootDir = process.env.UPLOAD_DIR || "uploads";
+const productsDir = process.env.UPLOAD_PRODUCTS_DIR || path.join(rootDir, "products");
+const usersDir = process.env.UPLOAD_USERS_DIR || path.join(rootDir, "users");
 
-const ALLOWED = (process.env.ALLOWED_FILE_TYPES || "image/jpeg,image/png,image/webp,image/gif").split(",");
-
-[UPLOAD_DIR, PRODUCTS_DIR].forEach((dir) => {
+// ensure dirs
+for (const dir of [rootDir, productsDir, usersDir]) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-});
+}
 
-function safeBaseName(name) {
-  return name.replace(/\.[^/.]+$/, "").replace(/[^a-z0-9]/gi, "_").toLowerCase();
+function safeName(originalName = "") {
+  const ext = path.extname(originalName).toLowerCase();
+  const base = path.basename(originalName, ext).replace(/[^a-z0-9_-]/gi, "_");
+  return { base, ext };
+}
+
+function isAllowedMimetype(mimetype) {
+  const allowed = (process.env.ALLOWED_FILE_TYPES || "image/jpeg,image/png,image/webp,image/gif")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return allowed.includes(mimetype);
 }
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const isProducts = req.originalUrl.includes("/upload/products");
-    cb(null, isProducts ? PRODUCTS_DIR : UPLOAD_DIR);
+    // можна розширити: /products, /users
+    const folder = req.baseUrl.includes("/upload") && req.path.includes("/products")
+      ? productsDir
+      : rootDir;
+    cb(null, folder);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const base = safeBaseName(file.originalname);
-    const unique = `${Date.now()}_${Math.round(Math.random() * 1e6)}`;
+    const { base, ext } = safeName(file.originalname);
+    const unique = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
     cb(null, `${base}_${unique}${ext}`);
   },
 });
 
-const fileFilter = (req, file, cb) => {
-  if (!ALLOWED.includes(file.mimetype)) {
-    return cb(new Error(`Invalid file type: ${file.mimetype}. Allowed: ${ALLOWED.join(", ")}`));
-  }
-  cb(null, true);
-};
-
-const uploadMiddleware = multer({
+export const uploadMiddleware = multer({
   storage,
-  fileFilter,
-  limits: { fileSize: MAX_FILE_SIZE },
+  limits: { fileSize: Number(process.env.UPLOAD_MAX_FILE_SIZE || 5 * 1024 * 1024) },
+  fileFilter: (req, file, cb) => {
+    if (!isAllowedMimetype(file.mimetype)) {
+      return cb(new Error("File type not allowed: " + file.mimetype));
+    }
+    cb(null, true);
+  },
 });
-
-export default uploadMiddleware;

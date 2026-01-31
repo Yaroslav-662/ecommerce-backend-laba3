@@ -25,27 +25,25 @@ const isProd = process.env.NODE_ENV === "production";
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  process.env.FRONTEND_URL, // наприклад https://your-app.vercel.app
+  process.env.FRONTEND_URL, // https://cosmetics-frontend-wqiy.vercel.app
 ].filter(Boolean);
-
-app.use(helmet());
 
 app.use(
   cors({
     origin: (origin, cb) => {
-      // дозволяємо запити без Origin (Swagger / server-to-server)
+      // Swagger/curl/server-to-server без Origin
       if (!origin) return cb(null, true);
 
       if (allowedOrigins.includes(origin)) return cb(null, true);
 
-      return cb(new Error("Not allowed by CORS: " + origin));
+      // ❗️НЕ кидати Error (інакше заголовки можуть не додатись)
+      return cb(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
 // ✅ preflight
 app.options(
   "*",
@@ -116,5 +114,6 @@ app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorMiddleware);
 
 export default app;
+
 
 

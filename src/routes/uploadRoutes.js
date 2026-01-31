@@ -4,6 +4,8 @@ import uploadMiddleware from "../middleware/uploadMiddleware.js";
 import { verifyToken, isAdmin } from "../middleware/authMiddleware.js";
 import {
   uploadFile,
+  uploadProductImages,
+  deleteProductImage,
   getAllFiles,
   deleteFile,
   renameFile,
@@ -44,21 +46,10 @@ const router = express.Router();
 router.post("/file", verifyToken, uploadMiddleware.single("file"), uploadFile);
 
 /**
- * ✅ NEW: Upload product image (admin)
- *
- * Frontend should send:
- *  - multipart/form-data
- *  - field name: "image"
- *
- * Response should contain:
- *  - url: absolute url to open in browser
- */
-
-/**
  * @swagger
  * /api/upload/products:
  *   post:
- *     summary: Завантажити фото товару (адмін)
+ *     summary: Завантажити 1..10 фото товару (адмін)
  *     tags: [Uploads]
  *     security:
  *       - BearerAuth: []
@@ -68,11 +59,13 @@ router.post("/file", verifyToken, uploadMiddleware.single("file"), uploadFile);
  *         multipart/form-data:
  *           schema:
  *             type: object
- *             required: [image]
+ *             required: [images]
  *             properties:
- *               image:
- *                 type: string
- *                 format: binary
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
  *     responses:
  *       201:
  *         description: Фото завантажено
@@ -81,38 +74,42 @@ router.post("/file", verifyToken, uploadMiddleware.single("file"), uploadFile);
  *             schema:
  *               type: object
  *               properties:
- *                 message: { type: string, example: "Uploaded" }
- *                 url: { type: string, example: "https://your-backend.onrender.com/uploads/products/product_123.jpg" }
- *                 path: { type: string, example: "/uploads/products/product_123.jpg" }
- *                 filename: { type: string, example: "product_123.jpg" }
- *                 mimetype: { type: string, example: "image/jpeg" }
- *                 size: { type: number, example: 123456 }
+ *                 message: { type: string, example: "✅ Фото товару завантажено" }
+ *                 urls:
+ *                   type: array
+ *                   items: { type: string }
+ *                   example:
+ *                    - "https://ecommerce-backend-mgfu.onrender.com/uploads/products/p_1.jpg"
+ *                    - "https://ecommerce-backend-mgfu.onrender.com/uploads/products/p_2.jpg"
+ *                 count: { type: number, example: 2 }
  */
 router.post(
   "/products",
   verifyToken,
   isAdmin,
-  uploadMiddleware.single("image"),
-  (req, res) => {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-
-    // uploadMiddleware має класти файли у uploads/... (переконайся в middleware)
-    const base = process.env.PUBLIC_URL || "http://localhost:5000";
-
-    // multer дає path типу "uploads/products/xxx.jpg"
-    const normalized = req.file.path.replace(/\\/g, "/");
-    const url = `${base}/${normalized}`;
-
-    return res.status(201).json({
-      message: "Uploaded",
-      url,
-      path: `/${normalized}`,
-      filename: req.file.filename,
-      mimetype: req.file.mimetype,
-      size: req.file.size,
-    });
-  }
+  uploadMiddleware.array("images", 10),
+  uploadProductImages
 );
+
+/**
+ * @swagger
+ * /api/upload/products/{filename}:
+ *   delete:
+ *     summary: Видалити фото товару (адмін)
+ *     tags: [Uploads]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - name: filename
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Фото видалено
+ */
+router.delete("/products/:filename", verifyToken, isAdmin, deleteProductImage);
 
 /**
  * @swagger
@@ -124,7 +121,7 @@ router.post(
  *       - BearerAuth: []
  *     responses:
  *       200:
- *         description: Список файлів
+ *         description: Список файлів (масив)
  */
 router.get("/", verifyToken, isAdmin, getAllFiles);
 

@@ -47,12 +47,18 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               name: { type: string, example: "Матова помада Velvet Touch" }
- *               price: { type: number, example: 349 }
- *               category: { type: string, example: "категорія_id" }
- *               description: { type: string, example: "Опис товару" }
- *               stock: { type: number, example: 100 }
+ *               properties:
+ *                name: { type: string, example: "Матова помада Velvet Touch" }
+ *                price: { type: number, example: 349 }
+ *                category: { type: string, example: "категорія_id" }
+ *                description: { type: string, example: "Опис товару" }
+ *                stock: { type: number, example: 100 }
+ *                images:
+ *                  type: array
+ *                  items: { type: string }
+ *                  example:
+ *                   - "https://ecommerce-backend-mgfu.onrender.com/uploads/products/product_123.jpg"
+
  *     responses:
  *       201:
  *         description: Товар додано
@@ -99,3 +105,4 @@ router.put("/:id", verifyToken, isAdmin, updateProduct);
 router.delete("/:id", verifyToken, isAdmin, deleteProduct);
 
 export default router;
+

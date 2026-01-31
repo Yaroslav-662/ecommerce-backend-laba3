@@ -5,7 +5,7 @@ const productSchema = new mongoose.Schema({
   description: String,
   price: { type: Number, required: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-  images: [String],
+  images: { type: [String], default: [] },
   stock: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
@@ -13,3 +13,4 @@ const productSchema = new mongoose.Schema({
 productSchema.index({ name: "text", description: "text" });
 
 export default mongoose.model("Product", productSchema);
+

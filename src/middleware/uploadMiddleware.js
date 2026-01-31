@@ -7,11 +7,11 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || "uploads";
 const PRODUCTS_DIR = process.env.UPLOAD_PRODUCTS_DIR || "uploads/products";
 const MAX_FILE_SIZE = Number(process.env.UPLOAD_MAX_FILE_SIZE) || 5 * 1024 * 1024;
 
+const ALLOWED = (process.env.ALLOWED_FILE_TYPES || "image/jpeg,image/png,image/webp,image/gif").split(",");
+
 [UPLOAD_DIR, PRODUCTS_DIR].forEach((dir) => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
-
-const ALLOWED = (process.env.ALLOWED_FILE_TYPES || "image/jpeg,image/png,image/webp,image/gif").split(",");
 
 function safeBaseName(name) {
   return name.replace(/\.[^/.]+$/, "").replace(/[^a-z0-9]/gi, "_").toLowerCase();
@@ -19,7 +19,6 @@ function safeBaseName(name) {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // тільки продукти в /uploads/products
     const isProducts = req.originalUrl.includes("/upload/products");
     cb(null, isProducts ? PRODUCTS_DIR : UPLOAD_DIR);
   },
@@ -38,10 +37,10 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-const upload = multer({
+const uploadMiddleware = multer({
   storage,
   fileFilter,
   limits: { fileSize: MAX_FILE_SIZE },
 });
 
-export default upload;
+export default uploadMiddleware;

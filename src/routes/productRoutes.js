@@ -33,11 +33,24 @@ const router = express.Router();
  *         name: q
  *         schema: { type: string }
  *         description: Пошуковий запит (назва/опис)
+ *       - in: query
+ *         name: category
+ *         schema: { type: string }
+ *         description: Category id або name/slug
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer }
+ *         description: Скільки елементів на сторінку
+ *       - in: query
+ *         name: sort
+ *         schema: { type: string }
+ *         description: "-createdAt | createdAt | -price | price | name | -name"
  *     responses:
  *       200:
- *         description: Список товарів
+ *         description: Список товарів (paged)
+ *
  *   post:
- *     summary: Додати новий товар
+ *     summary: Додати новий товар (адмін)
  *     tags: [Products]
  *     security:
  *       - BearerAuth: []
@@ -47,18 +60,19 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *               properties:
- *                name: { type: string, example: "Матова помада Velvet Touch" }
- *                price: { type: number, example: 349 }
- *                category: { type: string, example: "категорія_id" }
- *                description: { type: string, example: "Опис товару" }
- *                stock: { type: number, example: 100 }
- *                images:
- *                  type: array
- *                  items: { type: string }
- *                  example:
+ *             required: [name, price]
+ *             properties:
+ *               name: { type: string, example: "Матова помада Velvet Touch" }
+ *               price: { type: number, example: 349 }
+ *               category: { type: string, example: "категорія_id" }
+ *               description: { type: string, example: "Опис товару" }
+ *               stock: { type: number, example: 100 }
+ *               images:
+ *                 type: array
+ *                 items: { type: string }
+ *                 example:
  *                   - "https://ecommerce-backend-mgfu.onrender.com/uploads/products/product_123.jpg"
-
+ *                   - "https://ecommerce-backend-mgfu.onrender.com/uploads/products/product_456.jpg"
  *     responses:
  *       201:
  *         description: Товар додано
@@ -73,9 +87,11 @@ const router = express.Router();
  *         required: true
  *         schema: { type: string }
  *     responses:
- *       200: { description: Товар }
+ *       200:
+ *         description: Товар
+ *
  *   put:
- *     summary: Оновити товар
+ *     summary: Оновити товар (адмін)
  *     tags: [Products]
  *     security:
  *       - BearerAuth: []
@@ -83,10 +99,27 @@ const router = express.Router();
  *       - in: path
  *         name: id
  *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name: { type: string }
+ *               price: { type: number }
+ *               category: { type: string }
+ *               description: { type: string }
+ *               stock: { type: number }
+ *               images:
+ *                 type: array
+ *                 items: { type: string }
  *     responses:
- *       200: { description: Оновлено }
+ *       200:
+ *         description: Оновлено
+ *
  *   delete:
- *     summary: Видалити товар
+ *     summary: Видалити товар (адмін)
  *     tags: [Products]
  *     security:
  *       - BearerAuth: []
@@ -95,7 +128,8 @@ const router = express.Router();
  *         name: id
  *         required: true
  *     responses:
- *       200: { description: Видалено }
+ *       200:
+ *         description: Видалено
  */
 
 router.get("/", getProducts);
@@ -105,4 +139,3 @@ router.put("/:id", verifyToken, isAdmin, updateProduct);
 router.delete("/:id", verifyToken, isAdmin, deleteProduct);
 
 export default router;
-

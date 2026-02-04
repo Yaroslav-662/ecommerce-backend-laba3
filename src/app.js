@@ -1,7 +1,6 @@
 // src/app.js
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";
 import morgan from "morgan";
 import session from "express-session";
 import passport from "passport";
@@ -21,51 +20,37 @@ app.set("trust proxy", 1);
 
 const isProd = process.env.NODE_ENV === "production";
 
-// ✅ allowlist (додаси vercel домен потім)
+// ✅ allowlist (додаси vercel домен / FRONTEND_URL)
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   process.env.FRONTEND_URL, // https://cosmetics-frontend-wqiy.vercel.app
 ].filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      // Swagger/curl/server-to-server без Origin
-      if (!origin) return cb(null, true);
+const corsOptions = {
+  origin: (origin, cb) => {
+    // Swagger/curl/server-to-server без Origin
+    if (!origin) return cb(null, true);
 
-      if (allowedOrigins.includes(origin)) return cb(null, true);
+    if (allowedOrigins.includes(origin)) return cb(null, true);
 
-      // ❗️НЕ кидати Error (інакше заголовки можуть не додатись)
-      return cb(null, false);
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-// ✅ preflight
-app.options(
-  "*",
-  cors({
-    origin: (origin, cb) => {
-      if (!origin) return cb(null, true);
-      if (allowedOrigins.includes(origin)) return cb(null, true);
-      return cb(new Error("Not allowed by CORS: " + origin));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+    // ❗️не кидаємо Error, просто deny
+    return cb(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin"],
+};
 
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // ✅ один раз, без throw Error
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(morgan("dev"));
 app.use(rateLimiter);
 
-// ✅ cookies (потрібно для refreshToken/accessToken cookies)
+// ✅ cookies
 app.use(cookieParser());
 
 // Sessions (before passport)
@@ -114,6 +99,3 @@ app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorMiddleware);
 
 export default app;
-
-
-

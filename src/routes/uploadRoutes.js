@@ -1,10 +1,11 @@
 // src/routes/uploadRoutes.js
 import express from "express";
-import  uploadMiddleware  from "../middleware/uploadMiddleware.js";
+import uploadMiddleware from "../middleware/uploadMiddleware.js";
 import { verifyToken, isAdmin } from "../middleware/authMiddleware.js";
 import {
   uploadFile,
   uploadProductImages,
+  getProductImages,   // ✅ NEW
   getAllFiles,
   deleteFile,
   deleteByUrl,
@@ -47,7 +48,7 @@ router.post("/file", verifyToken, uploadMiddleware.single("file"), uploadFile);
 
 /**
  * ✅ IMPORTANT: upload product images (admin, multiple)
- * field: images[]
+ * POST /api/upload/products
  *
  * @swagger
  * /api/upload/products:
@@ -80,6 +81,23 @@ router.post(
   uploadMiddleware.array("images", 10),
   uploadProductImages
 );
+
+/**
+ * ✅ NEW: list product images (admin)
+ * GET /api/upload/products
+ *
+ * @swagger
+ * /api/upload/products:
+ *   get:
+ *     summary: Отримати список фото товарів (адмін)
+ *     tags: [Uploads]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Список фото
+ */
+router.get("/products", verifyToken, isAdmin, getProductImages);
 
 /**
  * @swagger
@@ -120,26 +138,6 @@ router.get("/", verifyToken, isAdmin, getAllFiles);
 
 /**
  * @swagger
- * /api/upload/{name}:
- *   delete:
- *     summary: Видалити файл (адмін)
- *     tags: [Uploads]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - name: name
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Файл видалено
- */
-router.delete("/:name", verifyToken, isAdmin, deleteFile);
-
-/**
- * @swagger
  * /api/upload/rename:
  *   put:
  *     summary: Перейменувати файл (адмін)
@@ -162,5 +160,24 @@ router.delete("/:name", verifyToken, isAdmin, deleteFile);
  */
 router.put("/rename", verifyToken, isAdmin, renameFile);
 
-export default router;
+/**
+ * @swagger
+ * /api/upload/{name}:
+ *   delete:
+ *     summary: Видалити файл (адмін)
+ *     tags: [Uploads]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - name: name
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Файл видалено
+ */
+router.delete("/:name", verifyToken, isAdmin, deleteFile);
 
+export default router;

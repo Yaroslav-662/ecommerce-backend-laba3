@@ -13,7 +13,6 @@ ensureDir(UPLOAD_DIR);
 ensureDir(PRODUCTS_DIR);
 
 const fileFilter = (req, file, cb) => {
-  // дозволяємо зображення + кілька базових типів
   const ok = [
     "image/jpeg",
     "image/png",
@@ -26,32 +25,53 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
-const makeStorage = (destinationDir) =>
+const safeName = (originalname = "file") => {
+  const ext = path.extname(originalname).toLowerCase();
+  const base = path
+    .basename(originalname, ext)
+    .replace(/[^\p{L}\p{N}\-_\.]/gu, "_")
+    .slice(0, 60);
+
+  return { base, ext };
+};
+
+const makeStorage = (dest) =>
   multer.diskStorage({
     destination: (req, file, cb) => {
-      ensureDir(destinationDir);
-      cb(null, destinationDir);
+      ensureDir(dest);
+      cb(null, dest);
     },
     filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname || "").toLowerCase();
-      const name = path
-        .basename(file.originalname || "file", ext)
-        .replace(/[^\p{L}\p{N}\-_\.]/gu, "_")
-        .slice(0, 60);
-
-      cb(null, `${name}-${Date.now()}${ext || ""}`);
+      const { base, ext } = safeName(file.originalname);
+      cb(null, `${base}-${Date.now()}${ext}`);
     },
   });
 
-export const uploadAny = multer({
+const uploadAny = multer({
   storage: makeStorage(UPLOAD_DIR),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter,
 });
 
-export const uploadProducts = multer({
+const uploadProducts = multer({
   storage: makeStorage(PRODUCTS_DIR),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter,
 });
+
+// ✅ щоб не ламати існуючі імпорти: import uploadMiddleware from ...
+export default {
+  single: (...args) => uploadAny.single(...args),
+  array: (...args) => uploadAny.array(...args),
+  fields: (...args) => uploadAny.fields(...args),
+
+  // ✅ нове: окремий uploader для products
+  products: {
+    single: (...args) => uploadProducts.single(...args),
+    array: (...args) => uploadProducts.array(...args),
+    fields: (...args) => uploadProducts.fields(...args),
+  },
+};
+
+
 

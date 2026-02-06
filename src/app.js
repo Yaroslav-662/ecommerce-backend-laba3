@@ -4,7 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import session from "express-session";
 import passport from "passport";
-import dotenv from "dotenv";
+import dotenv from "dotenv";allowedHeaders:
 import path from "path";
 import fs from "fs";
 import cookieParser from "cookie-parser";
@@ -45,9 +45,14 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept",],
+
   })
 );
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 
 // preflight
 app.options("*", cors({ origin: allowedOrigins, credentials: true }));
@@ -108,3 +113,4 @@ app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorMiddleware);
 
 export default app;
+

@@ -33,26 +33,30 @@ app.use(
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  process.env.FRONTEND_URL, // https://....vercel.app
+  process.env.FRONTEND_URL,
 ].filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin) return cb(null, true); // server-to-server, curl
-      if (allowedOrigins.includes(origin)) return cb(null, true);
-      return cb(null, false);
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept",],
+const corsOptions = {
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return cb(null, origin); // 👈 ВАЖЛИВО
+    }
+    return cb(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+  ],
+};
 
-  })
-);
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Credentials", "true");
-  next();
-});
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 
 // preflight
 app.options("*", cors({ origin: allowedOrigins, credentials: true }));
@@ -113,5 +117,6 @@ app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorMiddleware);
 
 export default app;
+
 
 

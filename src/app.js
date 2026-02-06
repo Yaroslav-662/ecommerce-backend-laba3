@@ -4,7 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import session from "express-session";
 import passport from "passport";
-import dotenv from "dotenv";allowedHeaders:
+import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
 import cookieParser from "cookie-parser";
@@ -113,4 +113,5 @@ app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorMiddleware);
 
 export default app;
+
 

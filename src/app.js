@@ -34,15 +34,16 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   process.env.FRONTEND_URL,
+  "https://ecommerce-backend-mgfu.onrender.com", // 👈 Swagger
 ].filter(Boolean);
 
 const corsOptions = {
   origin: (origin, cb) => {
-    if (!origin) return cb(null, true);
+    if (!origin) return cb(null, true); // ✅ curl / swagger
     if (allowedOrigins.includes(origin)) {
-      return cb(null, origin); // 👈 ВАЖЛИВО
+      return cb(null, true);
     }
-    return cb(new Error("Not allowed by CORS"));
+    return cb(null, false); // ❗ НЕ error
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -55,8 +56,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
-
 
 // preflight
 app.options("*", cors({ origin: allowedOrigins, credentials: true }));
@@ -117,6 +116,7 @@ app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 app.use(errorMiddleware);
 
 export default app;
+
 
 
 

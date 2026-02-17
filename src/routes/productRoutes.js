@@ -1,6 +1,6 @@
 // src/routes/productRoutes.js
 import express from "express";
-import { uploadCloud } from "../middlewares/upload.js";
+import { uploadCloud } from "../middleware/upload.js";
 import {
   getProducts,
   getProductById,
@@ -160,3 +160,4 @@ router.put(
 router.delete("/:id", verifyToken, isAdmin, deleteProduct);
 
 export default router;
+

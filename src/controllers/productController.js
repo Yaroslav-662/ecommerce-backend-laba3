@@ -4,12 +4,12 @@ import { validateObjectId } from "../utils/validateObjectId.js";
 import socket from "../socket/index.js"; // singleton: export default { io }
 import createDebug from "debug";
 import Category from "../models/Category.js";
+
 const debug = createDebug("app:productController");
 
 // optional Redis cache (if you have it configured)
 let redisClient;
 try {
-  // eslint-disable-next-line import/no-extraneous-dependencies
   const IORedis = await import("ioredis").then(m => m.default);
   redisClient = new IORedis(process.env.REDIS_URL || "redis://127.0.0.1:6379");
   debug("Redis client initialized for productController");
@@ -20,7 +20,7 @@ try {
 /** In-memory cache fallback */
 const memCache = {
   productsList: null,
-  ttl: 60 * 1000, // 1 minute
+  ttl: 60 * 1000,
   ts: 0,
 };
 
@@ -42,9 +42,14 @@ const getCache = async (key) => {
     return null;
   }
 };
-// helper: escape regex special chars
-const escapeRegex = (str = "") => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-// GET /api/products
+
+// helper
+const escapeRegex = (str = "") =>
+  str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * GET /api/products
+ */
 export const getProducts = async (req, res, next) => {
   try {
     const {
@@ -56,14 +61,12 @@ export const getProducts = async (req, res, next) => {
     } = req.query;
 
     const pageNum = Math.max(1, Number(page) || 1);
-    const limitNum = Math.min(100, Math.max(1, Number(limit) || 12)); // захист
+    const limitNum = Math.min(100, Math.max(1, Number(limit) || 12));
     const skip = (pageNum - 1) * limitNum;
 
-    // Нормалізуємо q: якщо пусто -> undefined (поверне все)
     const queryText = typeof q === "string" ? q.trim() : "";
     const hasQ = queryText.length > 0;
 
-    // allowlist для sort (щоб не передавали "що завгодно")
     const allowedSort = new Set([
       "-createdAt",
       "createdAt",
@@ -74,10 +77,10 @@ export const getProducts = async (req, res, next) => {
     ]);
     const safeSort = allowedSort.has(sort) ? sort : "-createdAt";
 
-    // cache only when no filters
-    const cacheKey = !hasQ && !category
-      ? `products:page:${pageNum}:limit:${limitNum}:sort:${safeSort}`
-      : null;
+    const cacheKey =
+      !hasQ && !category
+        ? `products:page:${pageNum}:limit:${limitNum}:sort:${safeSort}`
+        : null;
 
     if (cacheKey) {
       const cached = await getCache(cacheKey);
@@ -86,7 +89,6 @@ export const getProducts = async (req, res, next) => {
 
     const filter = {};
 
-    // ✅ Пошук "схоже": якщо q не задано -> НЕ фільтруємо => всі товари
     if (hasQ) {
       const safe = escapeRegex(queryText);
       filter.$or = [
@@ -95,14 +97,12 @@ export const getProducts = async (req, res, next) => {
       ];
     }
 
-    // ✅ category: або ObjectId, або назва (наприклад "Макіяж")
     if (typeof category === "string" && category.trim()) {
       const catValue = category.trim();
 
       if (validateObjectId(catValue)) {
         filter.category = catValue;
       } else {
-        // шукаємо по назві; slug прибери/додай залежно від твоєї схеми
         const cat = await Category.findOne({
           $or: [{ name: catValue }, { slug: catValue }],
         })
@@ -110,7 +110,6 @@ export const getProducts = async (req, res, next) => {
           .lean();
 
         if (!cat) {
-          // категорія не знайдена -> порожній список без помилки
           return res.json({
             total: 0,
             page: pageNum,
@@ -143,71 +142,118 @@ export const getProducts = async (req, res, next) => {
 
     if (cacheKey) await setCache(cacheKey, result, 60);
 
-    return res.json(result);
+    res.json(result);
   } catch (error) {
     next(error);
   }
 };
 
-// GET /api/products/:id
+/**
+ * GET /api/products/:id
+ */
 export const getProductById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    if (!validateObjectId(id)) return res.status(400).json({ message: "Invalid product ID" });
+    if (!validateObjectId(id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
 
     const cacheKey = `product:${id}`;
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
 
-    const product = await Product.findById(id).populate("category", "name").lean();
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    const product = await Product.findById(id)
+      .populate("category", "name")
+      .lean();
 
-    await setCache(cacheKey, product, 300); // cache 5min
-    return res.json(product);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    await setCache(cacheKey, product, 300);
+    res.json(product);
   } catch (error) {
     next(error);
   }
 };
 
-// POST /api/products  (admin)
+/**
+ * POST /api/products (admin)
+ * ✔ підтримує Cloudinary (req.files)
+ */
 export const createProduct = async (req, res, next) => {
   try {
-    const { name, description = "", price, category, stock = 0, images = [] } = req.body;
+    const {
+      name,
+      description = "",
+      price,
+      category,
+      stock = 0,
+    } = req.body;
+
     if (!name || typeof price === "undefined") {
       return res.status(400).json({ message: "Name and price required" });
     }
 
-    const product = await Product.create({ name, description, price, category, stock, images });
+    // 🔥 НОВЕ: фото з Cloudinary
+    const images = req.files
+      ? req.files.map(file => file.path)
+      : [];
 
-    // Clear relevant caches
+    const product = await Product.create({
+      name,
+      description,
+      price,
+      category,
+      stock,
+      images,
+    });
+
     if (redisClient) {
       await redisClient.delPattern?.("products*").catch(() => {});
     } else {
       memCache.productsList = null;
     }
 
-    // Emit real-time event
     if (socket?.io) {
-      socket.io.emit("products:created", product);          // broadcast to all
-      socket.io.to("admins").emit("admin:product:created", product); // admins room
+      socket.io.emit("products:created", product);
+      socket.io.to("admins").emit("admin:product:created", product);
     }
 
-    return res.status(201).json(product);
+    res.status(201).json(product);
   } catch (error) {
     next(error);
   }
 };
 
-// PUT /api/products/:id  (admin)
+/**
+ * PUT /api/products/:id (admin)
+ * ✔ підтримує оновлення фото
+ */
 export const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    if (!validateObjectId(id)) return res.status(400).json({ message: "Invalid product ID" });
+    if (!validateObjectId(id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
 
-    const updated = await Product.findByIdAndUpdate(id, req.body, { new: true }).lean();
-    if (!updated) return res.status(404).json({ message: "Product not found" });
+    const updateData = { ...req.body };
 
-    // invalidate caches
+    // 🔥 НОВЕ: якщо прийшли нові фото
+    if (req.files?.length) {
+      updateData.images = req.files.map(file => file.path);
+    }
+
+    const updated = await Product.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    ).lean();
+
+    if (!updated) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
     if (redisClient) {
       await Promise.all([
         redisClient.del(`product:${id}`),
@@ -223,20 +269,26 @@ export const updateProduct = async (req, res, next) => {
       socket.io.to("admins").emit("admin:product:updated", updated);
     }
 
-    return res.json(updated);
+    res.json(updated);
   } catch (error) {
     next(error);
   }
 };
 
-// DELETE /api/products/:id  (admin)
+/**
+ * DELETE /api/products/:id (admin)
+ */
 export const deleteProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    if (!validateObjectId(id)) return res.status(400).json({ message: "Invalid product ID" });
+    if (!validateObjectId(id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
 
     const removed = await Product.findByIdAndDelete(id).lean();
-    if (!removed) return res.status(404).json({ message: "Product not found" });
+    if (!removed) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
     if (redisClient) {
       await Promise.all([
@@ -253,10 +305,8 @@ export const deleteProduct = async (req, res, next) => {
       socket.io.to("admins").emit("admin:product:deleted", { id });
     }
 
-    return res.json({ message: "Product deleted", id });
+    res.json({ message: "Product deleted", id });
   } catch (error) {
     next(error);
   }
 };
-
-

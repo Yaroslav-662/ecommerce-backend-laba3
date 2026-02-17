@@ -1,0 +1,209 @@
+ Volume in drive C has no label.
+ Volume Serial Number is 2ADB-078C
+
+ Directory of C:\Users\Anonim\ecommerce-backend
+
+13.12.2025  20:47    <DIR>          .
+13.12.2025  20:47    <DIR>          ..
+07.12.2025  02:18             2 789 .env
+29.10.2025  17:40                52 .gitignore
+29.10.2025  17:40               522 docker-compose.yml
+05.12.2025  16:29               544 Dockerfile
+04.11.2025  20:22               267 eslint.config.js
+29.10.2025  16:27    <DIR>          logs
+06.12.2025  00:43    <DIR>          node_modules
+06.12.2025  00:43           294 753 package-lock.json
+07.12.2025  02:18             1 490 package.json
+26.11.2025  23:42             3 846 README.md
+29.10.2025  16:27    <DIR>          reports
+29.10.2025  16:27    <DIR>          scripts
+04.12.2025  12:19               956 server.js
+28.11.2025  03:23    <DIR>          src
+29.10.2025  16:27    <DIR>          uploads
+13.12.2025  20:47                 0 структура_список.txt
+              10 File(s)        305 219 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\logs
+
+29.10.2025  16:27    <DIR>          .
+29.10.2025  16:27    <DIR>          ..
+10.12.2025  01:14            19 721 app.log
+06.12.2025  19:44             5 532 error.log
+               2 File(s)         25 253 bytes
+
+ 
+
+
+ Directory of C:\Users\Anonim\ecommerce-backend\reports
+
+29.10.2025  16:27    <DIR>          .
+29.10.2025  16:27    <DIR>          ..
+29.10.2025  15:55                 0 sales-report-YYYY-MM-DD.csv
+               1 File(s)              0 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\scripts
+
+29.10.2025  16:27    <DIR>          .
+29.10.2025  16:27    <DIR>          ..
+29.10.2025  17:40               445 clearDatabase.js
+04.12.2025  01:14             3 047 seedAdmin.js
+               2 File(s)          3 492 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src
+
+28.11.2025  03:23    <DIR>          .
+28.11.2025  03:23    <DIR>          ..
+03.12.2025  01:44             1 796 app.js
+27.11.2025  02:20    <DIR>          config
+29.10.2025  16:27    <DIR>          controllers
+29.10.2025  16:27    <DIR>          middleware
+04.12.2025  01:51    <DIR>          models
+28.11.2025  03:23    <DIR>          monitoring
+28.11.2025  03:23    <DIR>          queue
+29.10.2025  16:27    <DIR>          routes
+28.11.2025  03:24    <DIR>          socket
+29.10.2025  16:27    <DIR>          tests
+29.10.2025  16:27    <DIR>          utils
+               1 File(s)          1 796 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\config
+
+27.11.2025  02:20    <DIR>          .
+27.11.2025  02:20    <DIR>          ..
+27.11.2025  00:29               364 db.js
+29.10.2025  17:40               503 logger.js
+27.11.2025  14:55             2 205 passport.js
+26.11.2025  20:20             1 545 swagger.js
+               4 File(s)          4 617 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\controllers
+
+29.10.2025  16:27    <DIR>          .
+29.10.2025  16:27    <DIR>          ..
+03.12.2025  01:44            16 434 authController.js
+04.11.2025  19:26             2 002 categoryController.js
+03.12.2025  01:44             3 151 orderController.js
+03.12.2025  01:44             6 116 productController.js
+05.11.2025  11:09             2 455 reviewController.js
+08.11.2025  00:32             3 237 uploadController.js
+08.11.2025  01:21             7 264 userController.js
+               7 File(s)         40 659 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\middleware
+
+29.10.2025  16:27    <DIR>          .
+29.10.2025  16:27    <DIR>          ..
+04.11.2025  19:48             1 062 adminMiddleware.js
+07.11.2025  02:29             1 679 authMiddleware.js
+29.10.2025  17:40               280 errorMiddleware.js
+29.10.2025  17:40               265 rateLimiter.js
+04.11.2025  20:01               574 uploadMiddleware.js
+               5 File(s)          3 860 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\models
+
+04.12.2025  01:51    <DIR>          .
+04.12.2025  01:51    <DIR>          ..
+29.10.2025  17:40               290 Category.js
+04.12.2025  01:54               803 Notification.js
+03.12.2025  01:44               690 Order.js
+03.12.2025  01:44               514 Product.js
+29.10.2025  17:40               438 Review.js
+29.10.2025  17:40               316 Token.js
+03.12.2025  01:44             1 258 User.js
+               7 File(s)          4 309 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\monitoring
+
+28.11.2025  03:23    <DIR>          .
+28.11.2025  03:23    <DIR>          ..
+28.11.2025  03:28               853 metrics.js
+               1 File(s)            853 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\queue
+
+28.11.2025  03:23    <DIR>          .
+28.11.2025  03:23    <DIR>          ..
+28.11.2025  03:28               572 notificationQueue.js
+04.12.2025  12:18             1 119 worker.js
+               2 File(s)          1 691 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\routes
+
+29.10.2025  16:27    <DIR>          .
+29.10.2025  16:27    <DIR>          ..
+03.12.2025  01:44             9 964 authRoutes.js
+04.11.2025  19:24             2 791 categoryRoutes.js
+04.11.2025  19:24               689 index.js
+03.12.2025  01:44             2 569 orderRoutes.js
+03.12.2025  01:44             2 892 productRoutes.js
+05.11.2025  11:02             2 183 reviewRoutes.js
+08.11.2025  00:32             2 651 uploadRoutes.js
+08.11.2025  01:21             6 448 userRoutes.js
+               8 File(s)         30 187 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\socket
+
+28.11.2025  03:24    <DIR>          .
+28.11.2025  03:24    <DIR>          ..
+28.11.2025  03:28             1 392 auth.js
+28.11.2025  03:21    <DIR>          events
+05.12.2025  00:32             1 433 index.js
+28.11.2025  03:28               627 redisAdapter.js
+28.11.2025  03:28             1 027 rooms.js
+04.12.2025  12:18               239 singleton.js
+               5 File(s)          4 718 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\socket\events
+
+28.11.2025  03:21    <DIR>          .
+28.11.2025  03:21    <DIR>          ..
+28.11.2025  03:28               830 notificationEvents.js
+28.11.2025  03:28             2 845 orderEvents.js
+08.12.2025  12:32             1 606 userEvents.js
+               3 File(s)          5 281 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\tests
+
+29.10.2025  16:27    <DIR>          .
+29.10.2025  16:27    <DIR>          ..
+29.10.2025  17:40               757 auth.test.js
+29.10.2025  15:56                 0 order.test.js
+29.10.2025  15:56                 0 product.test.js
+29.10.2025  17:40               268 setup.js
+               4 File(s)          1 025 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\src\utils
+
+29.10.2025  16:27    <DIR>          .
+29.10.2025  16:27    <DIR>          ..
+29.10.2025  15:56                 0 generateReport.js
+07.11.2025  01:03               439 generateToken.js
+29.10.2025  17:40               235 passwordUtils.js
+08.11.2025  01:21             2 252 sendEmail.js
+04.11.2025  19:35               130 validateObjectId.js
+               5 File(s)          3 056 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\uploads
+
+29.10.2025  16:27    <DIR>          .
+29.10.2025  16:27    <DIR>          ..
+29.10.2025  15:55    <DIR>          products
+29.10.2025  15:55    <DIR>          users
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\uploads\products
+
+29.10.2025  15:55    <DIR>          .
+29.10.2025  15:55    <DIR>          ..
+               0 File(s)              0 bytes
+
+ Directory of C:\Users\Anonim\ecommerce-backend\uploads\users
+
+29.10.2025  15:55    <DIR>          .
+29.10.2025  15:55    <DIR>          ..
+               0 File(s)              0 bytes
+
+     Total Files Listed:
+           14229 File(s)    102 553 001 bytes
+            5558 Dir(s)  442 900 054 016 bytes free

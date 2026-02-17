@@ -1,5 +1,6 @@
 // src/routes/productRoutes.js
 import express from "express";
+import { uploadCloud } from "../middlewares/upload.js";
 import {
   getProducts,
   getProductById,
@@ -57,26 +58,46 @@ const router = express.Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required: [name, price]
  *             properties:
- *               name: { type: string, example: "Матова помада Velvet Touch" }
- *               price: { type: number, example: 349 }
- *               category: { type: string, example: "категорія_id" }
- *               description: { type: string, example: "Опис товару" }
- *               stock: { type: number, example: 100 }
+ *               name:
+ *                 type: string
+ *                 example: "Матова помада Velvet Touch"
+ *               price:
+ *                 type: number
+ *                 example: 349
+ *               category:
+ *                 type: string
+ *                 example: "category_id"
+ *               description:
+ *                 type: string
+ *               stock:
+ *                 type: number
  *               images:
  *                 type: array
- *                 items: { type: string }
- *                 example:
- *                   - "https://ecommerce-backend-mgfu.onrender.com/uploads/products/product_123.jpg"
- *                   - "https://ecommerce-backend-mgfu.onrender.com/uploads/products/product_456.jpg"
+ *                 items:
+ *                   type: string
+ *                   format: binary
  *     responses:
  *       201:
  *         description: Товар додано
- *
+ */
+
+router.get("/", getProducts);
+
+router.post(
+  "/",
+  verifyToken,
+  isAdmin,
+  uploadCloud.array("images", 5),
+  createProduct
+);
+
+/**
+ * @swagger
  * /api/products/{id}:
  *   get:
  *     summary: Отримати товар за ID
@@ -95,14 +116,10 @@ const router = express.Router();
  *     tags: [Products]
  *     security:
  *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -113,7 +130,9 @@ const router = express.Router();
  *               stock: { type: number }
  *               images:
  *                 type: array
- *                 items: { type: string }
+ *                 items:
+ *                   type: string
+ *                   format: binary
  *     responses:
  *       200:
  *         description: Оновлено
@@ -123,19 +142,21 @@ const router = express.Router();
  *     tags: [Products]
  *     security:
  *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
  *     responses:
  *       200:
  *         description: Видалено
  */
 
-router.get("/", getProducts);
 router.get("/:id", getProductById);
-router.post("/", verifyToken, isAdmin, createProduct);
-router.put("/:id", verifyToken, isAdmin, updateProduct);
+
+router.put(
+  "/:id",
+  verifyToken,
+  isAdmin,
+  uploadCloud.array("images", 5),
+  updateProduct
+);
+
 router.delete("/:id", verifyToken, isAdmin, deleteProduct);
 
 export default router;

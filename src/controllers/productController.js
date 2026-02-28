@@ -46,20 +46,28 @@ const escapeRegex = (str = "") =>
 
 /**
  * 🔥 КЛЮЧОВЕ
- * Приймає:
- *  - images: string[] (фронтенд, Cloudinary)
- *  - images: File[] (Swagger)
+ * Повертає:
+ *  - string[] якщо фото реально передані
+ *  - null якщо фото НЕ передавались
  */
 const normalizeImages = (req) => {
-  if (Array.isArray(req.body.images)) return req.body.images;
-  if (typeof req.body.images === "string") return [req.body.images];
-
-  if (req.files?.length) {
-    return req.files.map(
-      (f) => f.secure_url || f.path
-    );
+  // 1️⃣ frontend: images: string[]
+  if (Array.isArray(req.body.images)) {
+    return req.body.images.filter(Boolean);
   }
-  return [];
+
+  // 2️⃣ frontend (іноді): "url1,url2"
+  if (typeof req.body.images === "string" && req.body.images.trim()) {
+    return req.body.images.split(",").map(s => s.trim()).filter(Boolean);
+  }
+
+  // 3️⃣ swagger: multipart files
+  if (req.files?.length) {
+    return req.files.map(f => f.secure_url || f.path);
+  }
+
+  // ❗ нічого не передали
+  return null;
 };
 
 /* =======================
@@ -80,6 +88,7 @@ export const getProducts = async (req, res, next) => {
     const skip = (pageNum - 1) * limitNum;
 
     const filter = {};
+
     if (q) {
       const safe = escapeRegex(q.trim());
       filter.$or = [
@@ -95,6 +104,7 @@ export const getProducts = async (req, res, next) => {
         const cat = await Category.findOne({
           $or: [{ name: category }, { slug: category }],
         }).lean();
+
         if (!cat) return res.json({ total: 0, products: [] });
         filter.category = cat._id;
       }
@@ -160,7 +170,7 @@ export const createProduct = async (req, res, next) => {
       return res.status(400).json({ message: "Name and price required" });
     }
 
-    const images = normalizeImages(req);
+    const images = normalizeImages(req) || [];
 
     const product = await Product.create({
       name,
@@ -191,8 +201,8 @@ export const updateProduct = async (req, res, next) => {
     const updateData = { ...req.body };
     const images = normalizeImages(req);
 
-    // 🔥 НЕ СТИРАЄМО фото, якщо не передали
-    if (images.length) {
+    // 🔥 ВАЖЛИВО
+    if (images !== null) {
       updateData.images = images;
     } else {
       delete updateData.images;

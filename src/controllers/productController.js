@@ -1,35 +1,30 @@
 // src/controllers/productController.js
 import Product from "../models/Product.js";
-import { validateObjectId } from "../utils/validateObjectId.js";
-import socket from "../socket/index.js"; // singleton: export default { io }
-import createDebug from "debug";
 import Category from "../models/Category.js";
+import { validateObjectId } from "../utils/validateObjectId.js";
+import socket from "../socket/index.js";
+import createDebug from "debug";
 
 const debug = createDebug("app:productController");
 
-// optional Redis cache (if you have it configured)
+/* =======================
+   CACHE (redis / memory)
+======================= */
 let redisClient;
 try {
   const IORedis = await import("ioredis").then(m => m.default);
-  redisClient = new IORedis(process.env.REDIS_URL || "redis://127.0.0.1:6379");
-  debug("Redis client initialized for productController");
-} catch (e) {
-  debug("No redis available, using in-memory cache");
+  redisClient = new IORedis(process.env.REDIS_URL);
+  debug("Redis enabled");
+} catch {
+  debug("Redis not available, using memory cache");
 }
 
-/** In-memory cache fallback */
-const memCache = {
-  productsList: null,
-  ttl: 60 * 1000,
-  ts: 0,
-};
-
+const memCache = {};
 const setCache = async (key, value, ttl = 60) => {
   if (redisClient) {
     await redisClient.setex(key, ttl, JSON.stringify(value));
   } else {
-    memCache[key] = value;
-    memCache.ts = Date.now() + ttl * 1000;
+    memCache[key] = { value, exp: Date.now() + ttl * 1000 };
   }
 };
 
@@ -37,19 +32,39 @@ const getCache = async (key) => {
   if (redisClient) {
     const raw = await redisClient.get(key);
     return raw ? JSON.parse(raw) : null;
-  } else {
-    if (memCache.ts > Date.now()) return memCache[key];
-    return null;
   }
+  const hit = memCache[key];
+  if (hit && hit.exp > Date.now()) return hit.value;
+  return null;
 };
 
-// helper
+/* =======================
+   HELPERS
+======================= */
 const escapeRegex = (str = "") =>
   str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
- * GET /api/products
+ * 🔥 КЛЮЧОВЕ
+ * Приймає:
+ *  - images: string[] (фронтенд, Cloudinary)
+ *  - images: File[] (Swagger)
  */
+const normalizeImages = (req) => {
+  if (Array.isArray(req.body.images)) return req.body.images;
+  if (typeof req.body.images === "string") return [req.body.images];
+
+  if (req.files?.length) {
+    return req.files.map(
+      (f) => f.secure_url || f.path
+    );
+  }
+  return [];
+};
+
+/* =======================
+   GET /api/products
+======================= */
 export const getProducts = async (req, res, next) => {
   try {
     const {
@@ -60,102 +75,60 @@ export const getProducts = async (req, res, next) => {
       sort = "-createdAt",
     } = req.query;
 
-    const pageNum = Math.max(1, Number(page) || 1);
-    const limitNum = Math.min(100, Math.max(1, Number(limit) || 12));
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Math.max(1, Number(limit)));
     const skip = (pageNum - 1) * limitNum;
 
-    const queryText = typeof q === "string" ? q.trim() : "";
-    const hasQ = queryText.length > 0;
-
-    const allowedSort = new Set([
-      "-createdAt",
-      "createdAt",
-      "-price",
-      "price",
-      "name",
-      "-name",
-    ]);
-    const safeSort = allowedSort.has(sort) ? sort : "-createdAt";
-
-    const cacheKey =
-      !hasQ && !category
-        ? `products:page:${pageNum}:limit:${limitNum}:sort:${safeSort}`
-        : null;
-
-    if (cacheKey) {
-      const cached = await getCache(cacheKey);
-      if (cached) return res.json(cached);
-    }
-
     const filter = {};
-
-    if (hasQ) {
-      const safe = escapeRegex(queryText);
+    if (q) {
+      const safe = escapeRegex(q.trim());
       filter.$or = [
         { name: { $regex: safe, $options: "i" } },
         { description: { $regex: safe, $options: "i" } },
       ];
     }
 
-    if (typeof category === "string" && category.trim()) {
-      const catValue = category.trim();
-
-      if (validateObjectId(catValue)) {
-        filter.category = catValue;
+    if (category) {
+      if (validateObjectId(category)) {
+        filter.category = category;
       } else {
         const cat = await Category.findOne({
-          $or: [{ name: catValue }, { slug: catValue }],
-        })
-          .select("_id")
-          .lean();
-
-        if (!cat) {
-          return res.json({
-            total: 0,
-            page: pageNum,
-            totalPages: 0,
-            products: [],
-          });
-        }
-
+          $or: [{ name: category }, { slug: category }],
+        }).lean();
+        if (!cat) return res.json({ total: 0, products: [] });
         filter.category = cat._id;
       }
     }
 
     const [products, total] = await Promise.all([
       Product.find(filter)
-        .select("name price category images stock createdAt description")
         .populate("category", "name")
-        .sort(safeSort)
+        .sort(sort)
         .skip(skip)
         .limit(limitNum)
         .lean(),
       Product.countDocuments(filter),
     ]);
 
-    const result = {
+    res.json({
       total,
       page: pageNum,
       totalPages: Math.ceil(total / limitNum),
       products,
-    };
-
-    if (cacheKey) await setCache(cacheKey, result, 60);
-
-    res.json(result);
-  } catch (error) {
-    next(error);
+    });
+  } catch (e) {
+    next(e);
   }
 };
 
-/**
- * GET /api/products/:id
- */
+/* =======================
+   GET /api/products/:id
+======================= */
 export const getProductById = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!validateObjectId(id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+      return res.status(400).json({ message: "Invalid ID" });
     }
 
     const cacheKey = `product:${id}`;
@@ -167,81 +140,62 @@ export const getProductById = async (req, res, next) => {
       .lean();
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({ message: "Not found" });
     }
 
     await setCache(cacheKey, product, 300);
     res.json(product);
-  } catch (error) {
-    next(error);
+  } catch (e) {
+    next(e);
   }
 };
 
-/**
- * POST /api/products (admin)
- * ✔ підтримує Cloudinary (req.files)
- */
+/* =======================
+   POST /api/products
+======================= */
 export const createProduct = async (req, res, next) => {
   try {
-    const {
-      name,
-      description = "",
-      price,
-      category,
-      stock = 0,
-    } = req.body;
-
-    if (!name || typeof price === "undefined") {
+    const { name, price, description = "", category, stock = 0 } = req.body;
+    if (!name || price === undefined) {
       return res.status(400).json({ message: "Name and price required" });
     }
 
-    // 🔥 НОВЕ: фото з Cloudinary
-    const images = req.files
-      ? req.files.map(file => file.path)
-      : [];
+    const images = normalizeImages(req);
 
     const product = await Product.create({
       name,
-      description,
       price,
+      description,
       category,
       stock,
       images,
     });
 
-    if (redisClient) {
-      await redisClient.delPattern?.("products*").catch(() => {});
-    } else {
-      memCache.productsList = null;
-    }
-
-    if (socket?.io) {
-      socket.io.emit("products:created", product);
-      socket.io.to("admins").emit("admin:product:created", product);
-    }
-
+    socket?.io?.emit("products:created", product);
     res.status(201).json(product);
-  } catch (error) {
-    next(error);
+  } catch (e) {
+    next(e);
   }
 };
 
-/**
- * PUT /api/products/:id (admin)
- * ✔ підтримує оновлення фото
- */
+/* =======================
+   PUT /api/products/:id
+======================= */
 export const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!validateObjectId(id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+      return res.status(400).json({ message: "Invalid ID" });
     }
 
     const updateData = { ...req.body };
+    const images = normalizeImages(req);
 
-    // 🔥 НОВЕ: якщо прийшли нові фото
-    if (req.files?.length) {
-      updateData.images = req.files.map(file => file.path);
+    // 🔥 НЕ СТИРАЄМО фото, якщо не передали
+    if (images.length) {
+      updateData.images = images;
+    } else {
+      delete updateData.images;
     }
 
     const updated = await Product.findByIdAndUpdate(
@@ -251,62 +205,34 @@ export const updateProduct = async (req, res, next) => {
     ).lean();
 
     if (!updated) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({ message: "Not found" });
     }
 
-    if (redisClient) {
-      await Promise.all([
-        redisClient.del(`product:${id}`),
-        redisClient.delPattern?.("products*").catch(() => {}),
-      ]).catch(() => {});
-    } else {
-      memCache.productsList = null;
-      memCache[`product:${id}`] = null;
-    }
-
-    if (socket?.io) {
-      socket.io.emit("products:updated", updated);
-      socket.io.to("admins").emit("admin:product:updated", updated);
-    }
-
+    socket?.io?.emit("products:updated", updated);
     res.json(updated);
-  } catch (error) {
-    next(error);
+  } catch (e) {
+    next(e);
   }
 };
 
-/**
- * DELETE /api/products/:id (admin)
- */
+/* =======================
+   DELETE /api/products/:id
+======================= */
 export const deleteProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!validateObjectId(id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+      return res.status(400).json({ message: "Invalid ID" });
     }
 
-    const removed = await Product.findByIdAndDelete(id).lean();
+    const removed = await Product.findByIdAndDelete(id);
     if (!removed) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({ message: "Not found" });
     }
 
-    if (redisClient) {
-      await Promise.all([
-        redisClient.del(`product:${id}`),
-        redisClient.delPattern?.("products*").catch(() => {}),
-      ]).catch(() => {});
-    } else {
-      memCache.productsList = null;
-      memCache[`product:${id}`] = null;
-    }
-
-    if (socket?.io) {
-      socket.io.emit("products:deleted", { id });
-      socket.io.to("admins").emit("admin:product:deleted", { id });
-    }
-
-    res.json({ message: "Product deleted", id });
-  } catch (error) {
-    next(error);
+    socket?.io?.emit("products:deleted", { id });
+    res.json({ message: "Deleted", id });
+  } catch (e) {
+    next(e);
   }
 };

@@ -29,26 +29,21 @@ const router = express.Router();
  *       - in: query
  *         name: page
  *         schema: { type: integer }
- *         description: Номер сторінки (пагінація)
  *       - in: query
  *         name: q
  *         schema: { type: string }
- *         description: Пошуковий запит (назва/опис)
  *       - in: query
  *         name: category
  *         schema: { type: string }
- *         description: Category id або name/slug
  *       - in: query
  *         name: limit
  *         schema: { type: integer }
- *         description: Скільки елементів на сторінку
  *       - in: query
  *         name: sort
  *         schema: { type: string }
- *         description: "-createdAt | createdAt | -price | price | name | -name"
  *     responses:
  *       200:
- *         description: Список товарів (paged)
+ *         description: Список товарів
  *
  *   post:
  *     summary: Додати новий товар (адмін)
@@ -71,16 +66,24 @@ const router = express.Router();
  *                 example: 349
  *               category:
  *                 type: string
- *                 example: "category_id"
  *               description:
  *                 type: string
  *               stock:
  *                 type: number
+ *
+ *               # 🔥 ВАРІАНТ 1 — Swagger / файли
  *               images:
  *                 type: array
  *                 items:
  *                   type: string
  *                   format: binary
+ *
+ *               # 🔥 ВАРІАНТ 2 — Frontend / URL
+ *               imagesUrls:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   example: "https://res.cloudinary.com/demo/image.jpg"
  *     responses:
  *       201:
  *         description: Товар додано
@@ -123,16 +126,29 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               name: { type: string }
- *               price: { type: number }
- *               category: { type: string }
- *               description: { type: string }
- *               stock: { type: number }
+ *               name:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               category:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               stock:
+ *                 type: number
+ *
+ *               # 🔥 ФАЙЛИ (Swagger)
  *               images:
  *                 type: array
  *                 items:
  *                   type: string
  *                   format: binary
+ *
+ *               # 🔥 URL (Frontend)
+ *               imagesUrls:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       200:
  *         description: Оновлено
@@ -160,4 +176,3 @@ router.put(
 router.delete("/:id", verifyToken, isAdmin, deleteProduct);
 
 export default router;
-

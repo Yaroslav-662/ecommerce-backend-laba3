@@ -56,12 +56,17 @@ const normalizeImages = (req) => {
     return req.body.images.filter(Boolean);
   }
 
-  // 2️⃣ frontend (іноді): "url1,url2"
+  // 2️⃣ frontend: imagesUrls: string[]
+  if (Array.isArray(req.body.imagesUrls)) {
+    return req.body.imagesUrls.filter(Boolean);
+  }
+
+  // 3️⃣ frontend (іноді): "url1,url2"
   if (typeof req.body.images === "string" && req.body.images.trim()) {
     return req.body.images.split(",").map(s => s.trim()).filter(Boolean);
   }
 
-  // 3️⃣ swagger: multipart files
+  // 4️⃣ swagger: multipart files
   if (req.files?.length) {
     return req.files.map(f => f.secure_url || f.path);
   }
@@ -246,3 +251,4 @@ export const deleteProduct = async (req, res, next) => {
     next(e);
   }
 };
+

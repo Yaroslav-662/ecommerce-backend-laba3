@@ -8,7 +8,7 @@ import createDebug from "debug";
 const debug = createDebug("app:productController");
 
 /* =======================
-   CACHE (redis / memory)
+   CACHE
 ======================= */
 let redisClient;
 try {
@@ -20,6 +20,7 @@ try {
 }
 
 const memCache = {};
+
 const setCache = async (key, value, ttl = 60) => {
   if (redisClient) {
     await redisClient.setex(key, ttl, JSON.stringify(value));
@@ -45,34 +46,59 @@ const escapeRegex = (str = "") =>
   str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
- * 🔥 КЛЮЧОВЕ
+ * 🔥 normalizeImages
+ * Підтримує:
+ * - files (Swagger / Cloudinary)
+ * - imagesUrls (string | string[])
+ * - images (string | string[])
+ *
  * Повертає:
- *  - string[] якщо фото реально передані
- *  - null якщо фото НЕ передавались
+ * - string[] → якщо фото реально передали
+ * - null     → якщо фото НЕ передавали
  */
 const normalizeImages = (req) => {
-  // 1️⃣ frontend: images: string[]
-  if (Array.isArray(req.body.images)) {
-    return req.body.images.filter(Boolean);
+  const out = [];
+
+  // 1️⃣ FILES (Swagger / Cloudinary / Multer)
+  if (Array.isArray(req.files) && req.files.length) {
+    out.push(
+      ...req.files
+        .map(f => f.secure_url || f.path)
+        .filter(Boolean)
+    );
   }
 
-  // 2️⃣ frontend: imagesUrls: string[]
-  if (Array.isArray(req.body.imagesUrls)) {
-    return req.body.imagesUrls.filter(Boolean);
+  // 2️⃣ imagesUrls (frontend / swagger)
+  const urls = req.body.imagesUrls;
+  if (urls) {
+    if (Array.isArray(urls)) {
+      out.push(...urls.filter(Boolean));
+    } else if (typeof urls === "string") {
+      out.push(
+        ...urls
+          .split(",")
+          .map(s => s.trim())
+          .filter(Boolean)
+      );
+    }
   }
 
-  // 3️⃣ frontend (іноді): "url1,url2"
-  if (typeof req.body.images === "string" && req.body.images.trim()) {
-    return req.body.images.split(",").map(s => s.trim()).filter(Boolean);
+  // 3️⃣ images (але ігноруємо "string" зі Swagger)
+  const imgs = req.body.images;
+  if (imgs && imgs !== "string") {
+    if (Array.isArray(imgs)) {
+      out.push(...imgs.filter(Boolean));
+    } else if (typeof imgs === "string") {
+      out.push(
+        ...imgs
+          .split(",")
+          .map(s => s.trim())
+          .filter(Boolean)
+      );
+    }
   }
 
-  // 4️⃣ swagger: multipart files
-  if (req.files?.length) {
-    return req.files.map(f => f.secure_url || f.path);
-  }
-
-  // ❗ нічого не передали
-  return null;
+  return out.length ? out : null;
 };
 
 /* =======================
@@ -171,6 +197,7 @@ export const getProductById = async (req, res, next) => {
 export const createProduct = async (req, res, next) => {
   try {
     const { name, price, description = "", category, stock = 0 } = req.body;
+
     if (!name || price === undefined) {
       return res.status(400).json({ message: "Name and price required" });
     }
@@ -206,12 +233,14 @@ export const updateProduct = async (req, res, next) => {
     const updateData = { ...req.body };
     const images = normalizeImages(req);
 
-    // 🔥 ВАЖЛИВО
+    // 🔥 НЕ затираємо фото, якщо їх не передали
     if (images !== null) {
       updateData.images = images;
     } else {
       delete updateData.images;
     }
+
+    delete updateData.imagesUrls;
 
     const updated = await Product.findByIdAndUpdate(
       id,
@@ -251,4 +280,3 @@ export const deleteProduct = async (req, res, next) => {
     next(e);
   }
 };
-

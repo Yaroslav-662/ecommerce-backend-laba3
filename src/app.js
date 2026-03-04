@@ -17,33 +17,32 @@ import swaggerRouter from "./config/swagger.js";
 dotenv.config();
 const app = express();
 
-// ✅ щоб req.protocol був правильний за проксі (Render)
+// ✅ Render / proxy
 app.set("trust proxy", 1);
 
 const isProd = process.env.NODE_ENV === "production";
 
-// ✅ Helmet: ДУЖЕ ВАЖЛИВО для картинок з бекенду на Vercel
+// ✅ Helmet — дозволяє картинки з бекенду
 app.use(
   helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }, // ✅ інакше браузер може блокувати /uploads
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
 
-// ✅ CORS allowlist
+// ✅ CORS — ВИПРАВЛЕНО
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  process.env.FRONTEND_URL,
-  "https://ecommerce-backend-mgfu.onrender.com", // 👈 Swagger
+  process.env.FRONTEND_URL, // 🔴 ОБОВʼЯЗКОВО!
 ].filter(Boolean);
 
 const corsOptions = {
   origin: (origin, cb) => {
-    if (!origin) return cb(null, true); // ✅ curl / swagger
-    if (allowedOrigins.includes(origin)) {
-      return cb(null, true);
-    }
-    return cb(null, false); // ❗ НЕ error
+    if (!origin) return cb(null, true); // swagger / curl
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+
+    console.log("❌ CORS blocked:", origin);
+    return cb(null, false); // НЕ error
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -55,10 +54,9 @@ const corsOptions = {
   ],
 };
 
-app.use(cors(corsOptions));
+app.use(cors(corsOptions)); // ✅ цього ДОСТАТНЬО
 
-// preflight
-app.options("*", cors({ origin: allowedOrigins, credentials: true }));
+// ❌ app.options("*", cors(...)) — ПРИБРАЛИ (ламало preflight)
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -85,20 +83,22 @@ app.use(passport.initialize());
 app.use(passport.session());
 import "./config/passport.js";
 
-// ✅ Static uploads — ВІДКРИТО ДЛЯ ГОСТЕЙ
+// ✅ Static uploads (картинки)
 const uploadDir = process.env.UPLOAD_DIR || "uploads";
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 app.use(
   "/uploads",
   express.static(path.resolve(uploadDir), {
     setHeaders: (res) => {
-      res.setHeader("Cache-Control", "public, max-age=86400"); // 1 день
+      res.setHeader("Cache-Control", "public, max-age=86400");
     },
   })
 );
 
-// API routes
+// API
 app.use("/api", routes);
 
 // Swagger
@@ -106,17 +106,17 @@ app.use("/api/docs", swaggerRouter);
 
 // health
 app.get("/", (req, res) =>
-  res.json({ message: "🛍️ E-commerce API running", uptime: process.uptime(), timestamp: new Date() })
+  res.json({
+    message: "🛍️ E-commerce API running",
+    uptime: process.uptime(),
+    timestamp: new Date(),
+  })
 );
 
 // 404
 app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 
-// error handler
+// errors
 app.use(errorMiddleware);
 
 export default app;
-
-
-
-
